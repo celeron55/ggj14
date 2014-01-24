@@ -16,7 +16,7 @@ h1e.add_image("font", "font.png")
 
 var m = "|mask=#000000"
 h1e.def_sprite("background", "background"+m, [[0,0,480,360]])
-h1e.def_sprite("thing", "sprites"+m, [[0,0,16,16],[16,0,16,16]], [8,8])
+h1e.def_sprite("thing", "sprites"+m, [[0,0,24,24],[24,0,24,24]], [12,12])
 
 var font_frames = []
 for(var i=0; i<128; i++){
@@ -79,8 +79,8 @@ function Game(){
 	var entities = []
 	entities.push({
 		type: "plantpart",
-		x: 100,
-		y: 100,
+		x: 240,
+		y: 230,
 	})
 
 	// Other resources
@@ -90,6 +90,7 @@ function Game(){
 
 	this.draw = function(){
 		h1e.draw_sprite(0, 0, "background")
+		h1e.draw_rect(0, 240, 480, 320-240, "#335522")
 		entities.forEach(function(entity){
 			if(entity.type == "plantpart"){
 				h1e.draw_sprite(entity.x, entity.y, "thing")
