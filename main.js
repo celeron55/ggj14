@@ -14,7 +14,9 @@ h1e.add_image("background", "background.png")
 h1e.add_image("sprites", "sprites.png")
 h1e.add_image("font", "font.png")
 
-h1e.def_sprite("background", "background", [[0,0,480,360]])
+var m = "|mask=#000000"
+h1e.def_sprite("background", "background"+m, [[0,0,480,360]])
+h1e.def_sprite("thing", "sprites"+m, [[0,0,16,16],[16,0,16,16]], [8,8])
 
 var font_frames = []
 for(var i=0; i<128; i++){
@@ -74,15 +76,29 @@ function Game(){
 	var game = this
 
 	// Entities or whatever
-	// TODO
+	var entities = []
+	entities.push({
+		type: "plantpart",
+		x: 100,
+		y: 100,
+	})
 
 	// Other resources
 	// TODO
 
 	// End condition variables and whatever
 
+	this.draw = function(){
+		h1e.draw_sprite(0, 0, "background")
+		entities.forEach(function(entity){
+			if(entity.type == "plantpart"){
+				h1e.draw_sprite(entity.x, entity.y, "thing")
+			}
+		})
+	}
+
 	// Called every frame
-	this.update = function(FPS){
+	this.update = function(){
 		// Return true if something changed (will be redrawn)
 		return true
 	}
@@ -96,7 +112,7 @@ function GameSection(game){
 
 	this.draw = function(h1e){
 		mouse_callbacks = []
-		h1e.draw_sprite(0, 0, "background")
+		game.draw()
 		draw_text(h1e, 0, 0, some_text)
 	}
 	this.event = function(h1e, event){
