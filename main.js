@@ -90,11 +90,11 @@ function roundify(v)
 	return Math.round(v/f)*f
 }
 
-function Visual(game, sprite){
+function VisualComponent(game, sprite){
 	this.sprite = sprite
 }
 
-function Position(game, x, y){
+function PositionComponent(game, x, y){
 	this.x = x
 	this.y = y
 }
@@ -104,7 +104,7 @@ function GenesComponent(game, current_genes){
 	this.current = current_genes
 }
 
-function SeedSpawner(game, interval_frames){
+function PlantComponent(game, interval_frames){
 	var that = this
 
 	// kannattaa tehdä vähentämällä nollaan, koska voi varioida timeriä
@@ -171,7 +171,7 @@ function SeedSpawner(game, interval_frames){
 	}
 }
 
-function FlowerSpawner(game, interval_frames){
+function SeedComponent(game, interval_frames){
 	var that = this
 
 	this.timer = 0
@@ -184,7 +184,7 @@ function FlowerSpawner(game, interval_frames){
 		if(this.timer >= 0){
 			this.timer++
 			if(this.timer == interval_frames-30){
-				entity.visual = new Visual(game, "halfgrown")
+				entity.visual = new VisualComponent(game, "halfgrown")
 			}
 			if(this.timer >= interval_frames){
 				//this.timer = 0 // Restart timer
@@ -195,18 +195,18 @@ function FlowerSpawner(game, interval_frames){
 	}
 
 	this.grow = function(entity){
-		entity.visual = new Visual(game, "flower")
-		entity.flower_spawner = false
-		entity.seed_spawner = new SeedSpawner(game, 2*FPS)
+		entity.visual = new VisualComponent(game, "flower")
+		entity.seed = false
+		entity.plant = new PlantComponent(game, 2*FPS)
 	}
 }
 
 function create_flower_entity(game, x, y, interval_frames, genes){
 	h1e.checkobject(genes)
 	return {
-		visual: new Visual(game, "flower"),
-		position: new Position(game, x, y),
-		seed_spawner: new SeedSpawner(game, interval_frames),
+		visual: new VisualComponent(game, "flower"),
+		position: new PositionComponent(game, x, y),
+		plant: new PlantComponent(game, interval_frames),
 		genes: new GenesComponent(game, genes),
 	}
 }
@@ -214,9 +214,9 @@ function create_flower_entity(game, x, y, interval_frames, genes){
 function create_seed_entity(game, x, y, interval_frames, genes){
 	h1e.checkobject(genes)
 	return {
-		visual: new Visual(game, "seed"),
-		position: new Position(game, x, y),
-		flower_spawner: new FlowerSpawner(game, interval_frames),
+		visual: new VisualComponent(game, "seed"),
+		position: new PositionComponent(game, x, y),
+		seed: new SeedComponent(game, interval_frames),
 		genes: new GenesComponent(game, genes),
 	}
 }
