@@ -338,7 +338,7 @@ function GameSection(game){
 					return
 				//var r = GRID_W/2 // One grid tile
 				var r = GRID_W*0.7 // A bit larger area
-				if(Math.abs(mx - p.x*GRID_W) <= r &&
+				if(Math.abs(mx - p.x*GRID_W - GRID_W/2) <= r &&
 						Math.abs(my - p.y*GRID_H) <= r){
 					for(var component_name in entity){
 						var c = entity[component_name]
