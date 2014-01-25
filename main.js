@@ -78,7 +78,6 @@ function roundify(v)
 
 function Visual(game, sprite){
 	this.sprite = sprite
-	this.blinking = false
 }
 
 function Position(game, x, y){
@@ -87,8 +86,14 @@ function Position(game, x, y){
 }
 
 function SeedSpawner(game, interval_frames){
+	var that = this
+
 	this.timer = 0
 	this.placeable = false
+
+	this.should_blink = function(entity){
+		return this.placeable
+	}
 
 	this.on_update = function(entity){
 		if(this.timer >= 0){
@@ -97,20 +102,16 @@ function SeedSpawner(game, interval_frames){
 				//this.timer = 0 // Restart timer
 				this.timer = -1 // Disable timer
 				this.placeable = true
-				entity.visual.blinking = true
 			}
 		}
 		if(this.placeable){
 			this.on_click = function(entity){
-				entity.visual.blinking = false
 				game.message = "Click to place"
 				game.on_click_anything = function(mx, my){
-					var x = fl(mx/GRID_W)
-					var y = fl(my/GRID_H)
+					var x = rn(mx/GRID_W)
+					var y = rn(my/GRID_H)
 					if(game.get_entity_at(x, y)){
 						game.message = "Cannot place on existing entity"
-						if(this.placeable)
-							entity.visual.blinking = true
 						return
 					}
 					game.message = undefined
@@ -120,7 +121,7 @@ function SeedSpawner(game, interval_frames){
 						seed_spawner: new SeedSpawner(game, 4*FPS),
 					}
 					game.entities.push(e1)
-					this.placeable = false
+					that.placeable = false
 				}
 			}
 		}
@@ -160,7 +161,7 @@ function Game(){
 			var visual = entity.visual
 			var p = entity.position
 			var show = true
-			if(visual.blinking && fl(now/100)%2==0)
+			if(entity.__blink && fl(now/100)%2==0)
 				show = false
 			if(show)
 				h1e.draw_sprite(p.x*GRID_W, p.y*GRID_H, visual.sprite)
@@ -170,10 +171,16 @@ function Game(){
 	// Called every frame
 	this.update = function(){
 		this.entities.forEach(function(entity){
+			entity.__blink = undefined
 			for(var component_name in entity){
 				var c = entity[component_name]
-				if(c && c.on_update)
+				if(c && c.on_update !== undefined){
 					c.on_update(entity)
+				}
+				if(c && c.should_blink !== undefined){
+					if(c.should_blink())
+						entity.__blink = true
+				}
 			}
 		})
 		// Return true if something changed (will be redrawn)
