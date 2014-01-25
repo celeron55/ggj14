@@ -9,5 +9,7 @@ Juuh elikkäs todoa
 -vaikutusalue (johon kukin kasvi voi laitella siemeniä/vettä)  
 ..-growth kasvattaa aluetta
 -vesi  
-..-sataa kaikille, absorboijat keräävät parhaiten  
-....-luovuttavat muille pitääkseen ne hengissä esim. uuteen spawnaukseen  
+..-vain absorboijat keräävät  
+....-luovuttavat muille pitääkseen ne hengissä spawnaukseen  
+......-rekursiivinen luovutus
+-risteytys?
