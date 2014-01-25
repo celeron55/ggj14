@@ -438,7 +438,7 @@ function GameSection(game){
 				if(entity.genes !== undefined){
 					var genes = entity.genes.current
 					hover_info = ""
-					hover_info += "life  : "+pad(genes.life/FPS, 1)+" s\n"
+					hover_info += "life  : "+pad(genes.life/FPS, 1)+"\n"
 					hover_info += "growth: "+pad(genes.growth, 3)+"\n"
 					hover_info += "absorb: "+pad(genes.absorb, 3)
 				}
