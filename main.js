@@ -225,7 +225,7 @@ function Game(){
 
 	// Other resources
 	this.tiles = new Tiles(TILES_W, TILES_H)
-	generate_ground(this.tiles)
+	generate_ground(this.tiles, Date.now())
 
 	// End condition variables and whatever
 

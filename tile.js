@@ -25,19 +25,26 @@ function Tiles(w, h){
 		return this.tiles[i] = t
 	}
 }
-function generate_ground(tiles){
+function generate_ground(tiles, seed){
 	for(var y=0; y<tiles.h; y++)
 	for(var x=0; x<tiles.w; x++)
 	{
 		// Empty positions
 		if(y < 11)
 			continue
-		var d = tiles.h - y
-		if(x < d*0.5 - 1)
+		var d = tiles.h - y - 5
+		if(x < d*1 - 1)
 			continue
-		if(x > tiles.w - d*0.5)
+		if(x > tiles.w - d*1)
 			continue
 		// Ground area
-		tiles.set(x, y, new Tile("brown"));
+		var name = "brown"
+		var f = noise_module.noise2d_perlin_abs(x/10, y/10, seed, 4, 0.5)
+		if(f < 0.5)
+			name = "grey"
+		var f = noise_module.noise2d_perlin_abs(x/10, y/10, seed+1, 4, 0.5)
+		if(f < 0.3)
+			name = "red"
+		tiles.set(x, y, new Tile(name));
 	}
 }
