@@ -96,6 +96,33 @@ function roundify(v)
 	return Math.round(v/f)*f
 }
 
+function create_gene_statrows(current_genes, new_genes){
+	var s_life = formatdiff(new_genes.life - current_genes.life, 0)
+	s_life += " = "+pad(new_genes.life, 0, 2)
+	var s_growth = formatdiff(new_genes.growth - current_genes.growth, 0)
+	s_growth += " = "+pad(new_genes.growth, 0, 2)
+	var s_absorb = formatdiff(new_genes.absorb - current_genes.absorb, 0)
+	s_absorb += " = "+pad(new_genes.absorb, 0, 2)
+	var statrows = [
+		{icon:"icon_life", text:s_life},
+		{icon:"icon_growth", text:s_growth},
+		{icon:"icon_absorb", text:s_absorb},
+	]
+	return statrows
+}
+
+function create_unchanged_gene_statrows(current_genes){
+	var s_life = pad(current_genes.life, 0, 2)
+	var s_growth = pad(current_genes.growth, 0, 2)
+	var s_absorb = pad(current_genes.absorb, 0, 2)
+	var statrows = [
+		{icon:"icon_life", text:s_life},
+		{icon:"icon_growth", text:s_growth},
+		{icon:"icon_absorb", text:s_absorb},
+	]
+	return statrows
+}
+
 function DieTimerComponent(game, frames){
 	this.on_update = function(entity){
 		frames--
@@ -205,18 +232,10 @@ function PlantComponent(game, interval_frames){
 					// (ilman vesimekaniikkaa ja geenejä, elää aina siihen asti)
 					that.timer = 6*FPS
 					// Create stat visualization entity
-					var s_life = formatdiff(new_genes.life - current_genes.life, 0)
-					s_life += " = "+pad(new_genes.life, 0, 2)
-					var s_growth = formatdiff(new_genes.growth - current_genes.growth, 0)
-					s_growth += " = "+pad(new_genes.growth, 0, 2)
-					var s_absorb = formatdiff(new_genes.absorb - current_genes.absorb, 0)
-					s_absorb += " = "+pad(new_genes.absorb, 0, 2)
-					var statrows = [
-						{icon:"icon_life", text:s_life},
-						{icon:"icon_growth", text:s_growth},
-						{icon:"icon_absorb", text:s_absorb},
-					]
-					game.entities.push(create_stat_entity(game, x, y, statrows))
+					var statrows = create_gene_statrows(current_genes, new_genes)
+					var e = create_stat_entity(game, x, y, statrows)
+					e.statvisual_owned_by = e1
+					game.entities.push(e)
 				}
 			}
 		}
@@ -370,6 +389,22 @@ function formatdiff(v, precision){
 		return "+"+v
 }
 
+function draw_statrows(x0, y0, statrows, rect_w){
+	var nrows = statrows.length
+	y0 -= nrows*8 + 10
+	if(rect_w === undefined)
+		rect_w = 54
+	//console.log("statrows: "+h1e.dump(statrows))
+	/*var x0 = p.x*GRID_W + 20
+	var y0 = p.y*GRID_H - statrows.length*8 + 10*/
+	//console.log("x0="+x0+", y0="+y0)
+	h1e.draw_rect(x0, y0, rect_w, 8*nrows, "rgba(0,0,0,0.5)")
+	statrows.forEach(function(row, i){
+		h1e.draw_sprite(x0, y0 + i*8, row.icon)
+		draw_text(h1e, x0+16, y0 + i*8, row.text)
+	})
+}
+
 function GameSection(game){
 	var that = this
 	game = game ? game : new Game()
@@ -413,19 +448,9 @@ function GameSection(game){
 							visual.sprite)
 				}
 				if(visual.statrows){
-					var nrows = visual.statrows.length
-					//console.log("statrows: "+h1e.dump(visual.statrows))
 					var x0 = p.x*GRID_W
-					var y0 = p.y*GRID_H - nrows*8 - 10
-					/*var x0 = p.x*GRID_W + 20
-					var y0 = p.y*GRID_H - visual.statrows.length*8 + 10*/
-					//console.log("x0="+x0+", y0="+y0)
-					var rect_w = 54
-					h1e.draw_rect(x0, y0, rect_w, 8*nrows, "rgba(0,0,0,0.5)")
-					visual.statrows.forEach(function(row, i){
-						h1e.draw_sprite(x0, y0 + i*8, row.icon)
-						draw_text(h1e, x0+16, y0 + i*8, row.text)
-					})
+					var y0 = p.y*GRID_H
+					draw_statrows(x0, y0, visual.statrows)
 				}
 			}
 		})
@@ -447,25 +472,21 @@ function GameSection(game){
 			// Do nothing
 		} else {
 			// Show information about hovered entity
-			var hover_info = undefined
 			var hover_entities = game.get_entities_under_mouse(mx, my)
 			if(hover_entities.length >= 1){
 				var entity = hover_entities[0]
-				if(entity.genes !== undefined){
+				// But not if there is some hover entity owned by it
+				var found = game.entities.some(function(entity2){
+					if(entity2.statvisual_owned_by == entity)
+						return true
+				})
+				if(entity.genes !== undefined && !found){
 					var genes = entity.genes.current
-					hover_info = ""
-					hover_info += "life  : "+pad(genes.life, 0, 3)+"\n"
-					hover_info += "growth: "+pad(genes.growth, 0, 3)+"\n"
-					hover_info += "absorb: "+pad(genes.absorb, 0, 3)
+					var statrows = create_unchanged_gene_statrows(genes)
+					var x = mx+16
+					var y = my+16
+					draw_statrows(x, y, statrows, 35)
 				}
-			}
-			if(hover_info){
-				//var x = 200
-				//var y = 30
-				var x = mx+16
-				var y = my-16
-				h1e.draw_rect(x, y, 60, 8*3, "rgba(0,0,0,0.5)")
-				draw_text(h1e, x, y, hover_info)
 			}
 		}
 	}
