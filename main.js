@@ -5,8 +5,8 @@ var rand = Math.random
 
 var FPS = 60
 var TICK_LENGTH = 1000/FPS
-var SCREEN_W = 352
-var SCREEN_H = 240
+var SCREEN_W = 480
+var SCREEN_H = 320
 var GRID_W = 16
 var GRID_H = 16
 var TILES_W = fl(SCREEN_W/GRID_W)
@@ -360,7 +360,7 @@ function Game(){
 	var growth = 10
 	var absorb = 10
 	var genes = new Genes(life, growth, absorb)
-	this.entities.push(create_flower_entity(game, 9, 10, 1*SPEED_FACTOR, genes))
+	this.entities.push(create_flower_entity(game, 15, 15, 1*SPEED_FACTOR, genes))
 
 	// Other resources
 	this.tiles = new Tiles(TILES_W, TILES_H)
@@ -457,12 +457,14 @@ function GameSection(game){
 	var that = this
 	game = game ? game : new Game()
 
+	var some_text = "FOO"
+
 	this.draw = function(h1e){
 		var now = Date.now() // Time in ms (for blinking and whatever)
 
 		// Background
-		h1e.draw_sprite(0, -32, "background")
-		var green_y = 100
+		h1e.draw_sprite(0, 0, "background")
+		var green_y = 160
 		h1e.draw_rect(0, green_y, 480, 320-green_y, "#335522")
 
 		// Tiles
@@ -514,6 +516,7 @@ function GameSection(game){
 			var my = h1e.mousey()
 			h1e.draw_sprite(mx, my-12, game.place_tooltip_sprite)
 		}
+		draw_text(h1e, 0, 0, some_text)
 		if(game.message)
 			draw_text(h1e, 0, 10, game.message)
 
@@ -552,6 +555,9 @@ function GameSection(game){
 		if(event.type == "mousedown"){
 			var mx = h1e.mousex()
 			var my = h1e.mousey()
+			some_text = "CLICKED AT ("+mx+", "+my+")"
+			
+			if (my<SCREEN_H/2) return true
 			
 			// First global callback
 			if(game.on_click_anything){
