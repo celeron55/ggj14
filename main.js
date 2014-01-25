@@ -231,7 +231,7 @@ function PlantComponent(game, interval_frames){
 			var random0 = 0.9 + Math.random()*0.2
 			this.life = entity.genes.current.life * GENE_TO_FRAMES * random0
 			// Growth
-			var GROWTH_TO_R = 0.1
+			var GROWTH_TO_R = 0.18
 			this.growth_r = entity.genes.current.growth * GROWTH_TO_R
 			var min_r = 1.1
 			if(this.growth_r < min_r)
