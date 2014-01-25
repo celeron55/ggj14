@@ -37,6 +37,12 @@ names.forEach(function(name, i){
 	h1e.def_sprite(name, "guggenheim"+m, [[16*i,y0,16,16]], [0,0])
 })
 
+var y0 = 24+32+16
+var names = ["icon_absorb", "icon_growth", "icon_life"]
+names.forEach(function(name, i){
+	h1e.def_sprite(name, "guggenheim"+m, [[8*i,y0,8,8]], [0,0])
+})
+
 var font_frames = []
 for(var i=0; i<128; i++){
 	var xi = i%16
@@ -90,8 +96,20 @@ function roundify(v)
 	return Math.round(v/f)*f
 }
 
-function VisualComponent(game, sprite){
+function DieTimerComponent(game, frames){
+	this.on_update = function(entity){
+		frames--
+		if(frames <= 0)
+			game.delete_entity(entity)
+	}
+}
+
+function SpriteVisualComponent(game, sprite){
 	this.sprite = sprite
+}
+
+function StatVisualComponent(game, statrows){
+	this.statrows = statrows // [{icon:"sprite", text:"+1"}, ...]
 }
 
 function PositionComponent(game, x, y){
@@ -102,6 +120,11 @@ function PositionComponent(game, x, y){
 function GenesComponent(game, current_genes){
 	h1e.checkobject(current_genes)
 	this.current = current_genes
+	this.umodified_age = 0
+
+	this.on_update = function(entity){
+		this.unmodified_age++
+	}
 }
 
 function PlantComponent(game, interval_frames){
@@ -180,6 +203,16 @@ function PlantComponent(game, interval_frames){
 					// saat laittaa uudelleen jos kasvi elää niin kauan
 					// (ilman vesimekaniikkaa ja geenejä, elää aina siihen asti)
 					that.timer = 6*FPS
+					// Create stat visualization entity
+					var d_life = pad((new_genes.life - current_genes.life)/100, 0)
+					var d_growth = pad((new_genes.growth - current_genes.growth)*100, 0)
+					var d_absorb = pad((new_genes.absorb - current_genes.absorb)*100, 0)
+					var statrows = [
+						{icon:"icon_life", text:(d_life>0?"+":"")+d_life},
+						{icon:"icon_growth", text:(d_growth>0?"+":"")+d_growth},
+						{icon:"icon_absorb", text:(d_absorb>0?"+":"")+d_absorb},
+					]
+					game.entities.push(create_stat_entity(game, x, y, statrows))
 				}
 			}
 		}
@@ -199,7 +232,7 @@ function SeedComponent(game, interval_frames){
 		if(this.timer >= 0){
 			this.timer++
 			if(this.timer == interval_frames-30){
-				entity.visual = new VisualComponent(game, "halfgrown")
+				entity.visual = new SpriteVisualComponent(game, "halfgrown")
 			}
 			if(this.timer >= interval_frames){
 				//this.timer = 0 // Restart timer
@@ -210,7 +243,7 @@ function SeedComponent(game, interval_frames){
 	}
 
 	this.grow = function(entity){
-		entity.visual = new VisualComponent(game, "flower")
+		entity.visual = new SpriteVisualComponent(game, "flower")
 		entity.seed = false
 		entity.plant = new PlantComponent(game, 2*FPS)
 	}
@@ -219,7 +252,7 @@ function SeedComponent(game, interval_frames){
 function create_flower_entity(game, x, y, interval_frames, genes){
 	h1e.checkobject(genes)
 	return {
-		visual: new VisualComponent(game, "flower"),
+		visual: new SpriteVisualComponent(game, "flower"),
 		position: new PositionComponent(game, x, y),
 		plant: new PlantComponent(game, interval_frames),
 		genes: new GenesComponent(game, genes),
@@ -229,10 +262,19 @@ function create_flower_entity(game, x, y, interval_frames, genes){
 function create_seed_entity(game, x, y, interval_frames, genes){
 	h1e.checkobject(genes)
 	return {
-		visual: new VisualComponent(game, "seed"),
+		visual: new SpriteVisualComponent(game, "seed"),
 		position: new PositionComponent(game, x, y),
 		seed: new SeedComponent(game, interval_frames),
 		genes: new GenesComponent(game, genes),
+	}
+}
+
+function create_stat_entity(game, x, y, statrows){
+	h1e.checkarray(statrows)
+	return {
+		visual: new StatVisualComponent(game, statrows),
+		position: new PositionComponent(game, x, y),
+		dietimer: new DieTimerComponent(game, 3*FPS),
 	}
 }
 
@@ -321,10 +363,12 @@ function GameSection(game){
 
 	this.draw = function(h1e){
 		var now = Date.now() // Time in ms (for blinking and whatever)
+
 		// Background
 		h1e.draw_sprite(0, 0, "background")
 		var green_y = 160
 		h1e.draw_rect(0, green_y, 480, 320-green_y, "#335522")
+
 		// Tiles
 		for(var y=0; y<TILES_H; y++)
 		for(var x=0; x<TILES_W; x++)
@@ -335,9 +379,12 @@ function GameSection(game){
 			//var prop = tile_properties[t.name] // Unused here
 			h1e.draw_sprite(x*GRID_W, y*GRID_H, "tile_"+t.name)
 		}
+
 		// Entities
 		game.entities.forEach(function(entity){
 			if(entity.visual === undefined)
+				return
+			if(entity.position === undefined)
 				return
 			var visual = entity.visual
 			var p = entity.position
@@ -345,9 +392,23 @@ function GameSection(game){
 			if(entity.__blink && fl(now/100)%2==0)
 				show = false
 			if(show){
-				h1e.draw_sprite(p.x*GRID_W, p.y*GRID_H, "shadow")
-				h1e.draw_sprite(p.x*GRID_W+GRID_W/2, p.y*GRID_H-2,
-						visual.sprite)
+				if(visual.sprite){
+					h1e.draw_sprite(p.x*GRID_W, p.y*GRID_H, "shadow")
+					h1e.draw_sprite(p.x*GRID_W+GRID_W/2, p.y*GRID_H-2,
+							visual.sprite)
+				}
+				if(visual.statrows){
+					//console.log("statrows: "+h1e.dump(visual.statrows))
+					var x0 = p.x*GRID_W
+					var y0 = p.y*GRID_H - visual.statrows.length*8 - 10
+					/*var x0 = p.x*GRID_W + 20
+					var y0 = p.y*GRID_H - visual.statrows.length*8 + 10*/
+					//console.log("x0="+x0+", y0="+y0)
+					visual.statrows.forEach(function(row, i){
+						h1e.draw_sprite(x0, y0 + i*8, row.icon)
+						draw_text(h1e, x0+12, y0 + i*8, row.text)
+					})
+				}
 			}
 		})
 
@@ -360,6 +421,7 @@ function GameSection(game){
 		draw_text(h1e, 0, 0, some_text)
 		if(game.message)
 			draw_text(h1e, 0, 10, game.message)
+
 		// Visualize what is selected
 		var mx = h1e.mousex()
 		var my = h1e.mousey()
