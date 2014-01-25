@@ -339,6 +339,40 @@ function SeedComponent(game, interval_frames){
 	}
 }
 
+function RainVisualComponent(game){
+	this.on_draw = function(entity){
+		h1e.draw_rect(0, 0, SCREEN_W, 160, "rgba(0,60,200,0.5)")
+	}
+}
+
+function RainComponent(game){
+	this.on_update = function(entity){
+		// TODO
+	}
+}
+
+function GlobalEffectStarterComponent(game){
+	var that = this
+
+	this.timer = SPEED_FACTOR*1
+
+	this.on_update = function(entity){
+		if(this.timer >= 0){
+			this.timer--
+			return
+		}
+		this.timer = SPEED_FACTOR*30
+		var e = {
+			visual: new RainVisualComponent(game),
+			dietimer: new DieTimerComponent(game, 3*FPS),
+			rain: new RainComponent(game),
+		}
+		game.entities.push(e)
+	}
+	this.on_draw = function(entity){
+	}
+}
+
 function create_flower_entity(game, x, y, interval_frames, genes){
 	h1e.checkobject(genes)
 	return {
@@ -385,6 +419,11 @@ function Game(){
 	var absorb = 10
 	var genes = new Genes(life, growth, absorb)
 	this.entities.push(create_flower_entity(game, 15, 15, 1*SPEED_FACTOR, genes))
+
+	// Global effect handler
+	this.entities.push({
+		global_effect_starter: new GlobalEffectStarterComponent(this)
+	})
 
 	// Other resources
 	this.tiles = new Tiles(TILES_W, TILES_H)
@@ -513,43 +552,47 @@ function GameSection(game){
 
 		// Entities
 		game.entities.forEach(function(entity){
-			if(entity.visual === undefined)
-				return
-			if(entity.position === undefined)
-				return
 			var visual = entity.visual
 			var p = entity.position
+			if(visual === undefined)
+				return
+			// Special visuals
+			if(visual.on_draw){
+				visual.on_draw(entity)
+				return
+			}
+			// Basic visuals
 			var show = true
 			if(entity.__blink && fl(now/100)%2==0)
 				show = false
-			if(show){
-				var hilight = entity.__hilight
-				if(hilight){
-					h1e.draw_rect(p.x*GRID_W, p.y*GRID_H, 16, 16,
-							"rgba(255,255,255,0.5)")
-				}
-				var sprite = visual.sprite
-				if(visual.get_sprite)
-					sprite = visual.get_sprite(entity)
-				if(sprite){
-					h1e.draw_sprite(p.x*GRID_W, p.y*GRID_H, "shadow")
-					h1e.draw_sprite(p.x*GRID_W+GRID_W/2, p.y*GRID_H-2, sprite)
-				}
-				if(visual.statrows){
-					var x0 = p.x*GRID_W
-					var y0 = p.y*GRID_H
-					draw_statrows(x0, y0, visual.statrows)
-				}
-				if(visual.tile_area_r !== undefined){
-					for(var y=0; y<TILES_H; y++)
-					for(var x=0; x<TILES_W; x++)
-					{
-						var d = pos_distance(x, y, p.x, p.y)
-						if(d > visual.tile_area_r)
-							continue
-						h1e.draw_rect(x*GRID_W, y*GRID_H, 16, 16,
-								"rgba(70,200,50,0.3)")
-					}
+			if(!show)
+				return
+			var hilight = entity.__hilight
+			if(hilight){
+				h1e.draw_rect(p.x*GRID_W, p.y*GRID_H, 16, 16,
+						"rgba(255,255,255,0.5)")
+			}
+			var sprite = visual.sprite
+			if(visual.get_sprite)
+				sprite = visual.get_sprite(entity)
+			if(sprite && p !== undefined){
+				h1e.draw_sprite(p.x*GRID_W, p.y*GRID_H, "shadow")
+				h1e.draw_sprite(p.x*GRID_W+GRID_W/2, p.y*GRID_H-2, sprite)
+			}
+			if(visual.statrows && p !== undefined){
+				var x0 = p.x*GRID_W
+				var y0 = p.y*GRID_H
+				draw_statrows(x0, y0, visual.statrows)
+			}
+			if(visual.tile_area_r !== undefined && p !== undefined){
+				for(var y=0; y<TILES_H; y++)
+				for(var x=0; x<TILES_W; x++)
+				{
+					var d = pos_distance(x, y, p.x, p.y)
+					if(d > visual.tile_area_r)
+						continue
+					h1e.draw_rect(x*GRID_W, y*GRID_H, 16, 16,
+							"rgba(70,200,50,0.3)")
 				}
 			}
 		})
