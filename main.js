@@ -148,7 +148,7 @@ function AreaVisualComponent(game, r){
 	this.tile_area_r = r
 }
 
-function is_flat_genes(genes) {
+function get_gene_d(genes){
 	var genevalues = genes.get_array()
 	var min = undefined
 	var max = undefined
@@ -158,11 +158,15 @@ function is_flat_genes(genes) {
 		if(max === undefined || gene.value > max)
 			max = gene.value
 	})
-	return (max - min < 8)
+	return (max - min)
 }
 function get_best_gene(genes){
 	var genevalues = genes.get_array()
 	return genevalues[genevalues.length-1].name
+}
+function is_flat_genes(genes) {
+	var d = get_gene_d(genes)
+	return (d < 8)
 }
 
 function GeneVisualComponent(game){
@@ -208,7 +212,7 @@ function PlantComponent(game, interval_frames){
 	// Initialisoidaan ensimmäisellä updatella kun entiteetti on täysissä voimissaan
 	this.life = undefined // frameja jäljellä kullakin hetkellä
 	this.growth_r = undefined // kasvualue (tilejä) (ei muutu)
-	this.absorbed_amount = 0
+	this.absorbed_amount = undefined
 
 	this.should_blink = function(entity){
 		return (this.life < SPEED_FACTOR*2)
@@ -222,22 +226,27 @@ function PlantComponent(game, interval_frames){
 			h1e.checkobject(entity.genes)
 			h1e.checkobject(entity.genes.current)
 			h1e.checkfinite(entity.genes.current.life)
+			// Life
 			var GENE_TO_FRAMES = 8 * SPEED_FACTOR
-			var GROWTH_TO_R = 0.1
 			var random0 = 0.9 + Math.random()*0.2
 			this.life = entity.genes.current.life * GENE_TO_FRAMES * random0
+			// Growth
+			var GROWTH_TO_R = 0.1
 			this.growth_r = entity.genes.current.growth * GROWTH_TO_R
 			var min_r = 1.1
 			if(this.growth_r < min_r)
 				this.growth_r = min_r
+			// Absorbtion
+			//this.absorbed_amount = entity.genes.current.absorb
+			this.absorbed_amount = 1
 		}
 		if (this.life !== undefined && this.life<=0) {
 			game.delete_entity(entity)
 			return
 		}
 		this.life--
-		
-		if(this.timer > 0){
+
+		if(this.timer > 0 && this.absorbed_amount >= 1){
 			this.timer--
 			if(this.timer == 0){
 				//this.timer = 0 // Restart timer
@@ -245,63 +254,63 @@ function PlantComponent(game, interval_frames){
 				this.placeable = true
 			}
 		}
-		
-		this.on_click = function(entity){
-			if(this.placeable){
-				game.message = "Click to place"
-				game.place_tooltip_sprite = "seed"
-				var p = entity.position
-				var r = this.growth_r
-				var area_visual = {
-					visual: new AreaVisualComponent(game, r),
-					position: new PositionComponent(game, p.x, p.y),
-				}
-				game.entities.push(area_visual)
+	}
+	this.on_click = function(entity){
+		if(this.placeable){
+			game.message = "Click to place"
+			game.place_tooltip_sprite = "seed"
+			var p = entity.position
+			var r = this.growth_r
+			var area_visual = {
+				visual: new AreaVisualComponent(game, r),
+				position: new PositionComponent(game, p.x, p.y),
+			}
+			game.entities.push(area_visual)
 
-				game.on_click_anything = function(mx, my){
-					game.delete_entity(area_visual)
-					game.message = undefined
-					game.place_tooltip_sprite = undefined
-					var x = rn((mx-GRID_W/2)/GRID_W)
-					var y = rn((my-GRID_H/2)/GRID_H)
-					var d = pos_distance(x, y, p.x, p.y)
-					if(d > that.growth_r){
-						game.message = "Out of range of this plant"
-						return
-					}
-					if(game.get_entity_at(x, y)){
-						game.message = "Cannot place on existing entity"
-						return
-					}
-					h1e.checkobject(entity.genes)
-					var tile = game.tiles.get(x, y)
-					if(tile === undefined){
-						game.message = "Cannot place here"
-						return
-					}
-					h1e.checkobject(tile_properties)
-					var prop = tile_properties[tile.name]
-					if(prop === undefined){
-						game.message = "Cannot place here"
-						return
-					}
-					var current_genes = entity.genes.current
-					//console.log("current_genes: "+h1e.dump(current_genes))
-					var new_genes = current_genes.clone()
-					//console.log("new_genes: "+h1e.dump(new_genes))
-					new_genes.mutate(prop.genes)
-					var e1 = create_seed_entity(game, x, y, 4*SPEED_FACTOR, new_genes)
-					game.entities.push(e1)
-					that.placeable = false
-					// saat laittaa uudelleen jos kasvi elää niin kauan
-					// (ilman vesimekaniikkaa ja geenejä, elää aina siihen asti)
-					that.timer = 6*SPEED_FACTOR
-					// Create stat visualization entity
-					var statrows = create_gene_statrows(current_genes, new_genes)
-					var e = create_stat_entity(game, x, y, statrows)
-					e.statvisual_owned_by = e1
-					game.entities.push(e)
+			game.on_click_anything = function(mx, my){
+				game.delete_entity(area_visual)
+				game.message = undefined
+				game.place_tooltip_sprite = undefined
+				var x = rn((mx-GRID_W/2)/GRID_W)
+				var y = rn((my-GRID_H/2)/GRID_H)
+				var d = pos_distance(x, y, p.x, p.y)
+				if(d > that.growth_r){
+					game.message = "Out of range of this plant"
+					return
 				}
+				if(game.get_entity_at(x, y)){
+					game.message = "Cannot place on existing entity"
+					return
+				}
+				h1e.checkobject(entity.genes)
+				var tile = game.tiles.get(x, y)
+				if(tile === undefined){
+					game.message = "Cannot place here"
+					return
+				}
+				h1e.checkobject(tile_properties)
+				var prop = tile_properties[tile.name]
+				if(prop === undefined){
+					game.message = "Cannot place here"
+					return
+				}
+				var current_genes = entity.genes.current
+				//console.log("current_genes: "+h1e.dump(current_genes))
+				var new_genes = current_genes.clone()
+				//console.log("new_genes: "+h1e.dump(new_genes))
+				new_genes.mutate(prop.genes)
+				var e1 = create_seed_entity(game, x, y, 4*SPEED_FACTOR, new_genes)
+				game.entities.push(e1)
+				that.placeable = false
+				// saat laittaa uudelleen jos kasvi elää niin kauan
+				// (ilman vesimekaniikkaa ja geenejä, elää aina siihen asti)
+				that.timer = 6*SPEED_FACTOR
+				that.absorbed_amount -= 1
+				// Create stat visualization entity
+				var statrows = create_gene_statrows(current_genes, new_genes)
+				var e = create_stat_entity(game, x, y, statrows)
+				e.statvisual_owned_by = e1
+				game.entities.push(e)
 			}
 		}
 	}
@@ -340,7 +349,12 @@ function RainVisualComponent(game){
 }
 
 function RainComponent(game){
+	var triggered = false
+
 	this.on_update = function(entity){
+		if(triggered)
+			return
+		triggered = true // Do only once
 		game.entities.forEach(function(entity){
 			var plant = entity.plant
 			if(plant === undefined)
@@ -348,13 +362,38 @@ function RainComponent(game){
 			if(entity.genes === undefined)
 				return
 			var genes = entity.genes.current
-			if(!genes)
+			h1e.checkobject(genes)
+			if(get_best_gene(genes) !== "absorb" || is_flat_genes(genes))
 				return
-			var best_gene = get_best_gene(genes)
-			if(best_gene !== "absorb")
-				return
-			plant.absorbed_amount = genes.absorb
+			plant.absorbed_amount = fl(genes.absorb)
 		})
+		for(var i=0; i<5; i++){
+			// Go through absorbing plants
+			game.entities.some(function(e1){
+				if(!e1.genes || !e1.plant || !e1.position)
+					return false // next
+				// Don't give all water away
+				if(e1.plant.absorbed_amount < 1)
+					return true // break
+				var p1 = e1.position
+				// Go through all entities to give water to nearby plants
+				game.entities.some(function(e2){
+					// Don't give all water away
+					if(e1.plant.absorbed_amount < 1)
+						return true // break
+					if(!e2.genes || !e2.plant || !e2.position)
+						return false // next
+					if(e2.plant.absorbed_amount >= e2.genes.absorb)
+						return false // next
+					var p2 = e2.position
+					if(pos_distance(p1.x, p1.y, p2.x, p2.y) >=
+							e1.plant.growth_r)
+						return false // next
+					e2.plant.absorbed_amount += 1
+					e1.plant.absorbed_amount -= 1
+				})
+			})
+		}
 	}
 }
 
@@ -634,7 +673,7 @@ function GameSection(game){
 					var statrows = create_unchanged_gene_statrows(genes)
 					if(entity.plant){
 						var a = entity.plant.absorbed_amount
-						statrows.push({text: "absorbed: "+a})
+						statrows.push({text: "absorbed: "+pad(a, 2)})
 					}
 					var x = mx+16
 					var y = my+16
