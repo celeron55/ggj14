@@ -9,6 +9,8 @@ var SCREEN_W = 480
 var SCREEN_H = 320
 var GRID_W = 16
 var GRID_H = 16
+var TILES_W = fl(SCREEN_W/GRID_W)
+var TILES_H = fl(SCREEN_H/GRID_H)
 
 h1e.bgstyle = "#000000"
 h1e.init($("#main_canvas")[0], SCREEN_W, SCREEN_H, FPS)
@@ -20,10 +22,17 @@ h1e.add_image("guggenheim", "guggenheim2.png")
 
 var m = "|mask=#000000"
 h1e.def_sprite("background", "background"+m, [[0,0,480,360]])
-//h1e.def_sprite("thing2", "sprites"+m, [[0,0,24,24],[24,0,24,24]], [12,12])
+
+var y0 = 0
 var names = ["flower","tree1","tree2","seed","halfgrown","vine"]
 names.forEach(function(name, i){
-	h1e.def_sprite(name, "guggenheim"+m, [[24*i,0,24,24]], [12,12])
+	h1e.def_sprite(name, "guggenheim"+m, [[24*i,y0,24,24]], [12,12])
+})
+
+var y0 = 24+32
+var names = ["tile_brown", "tile_red", "tile_grey"]
+names.forEach(function(name, i){
+	h1e.def_sprite(name, "guggenheim"+m, [[16*i,y0,16,16]], [0,0])
 })
 
 var font_frames = []
@@ -215,12 +224,10 @@ function Game(){
 	this.entities.push(create_flower_entity(game, 15, 15, 1*FPS))
 
 	// Other resources
-	// TODO
+	this.tiles = new Tiles(TILES_W, TILES_H)
+	generate_ground(this.tiles)
 
 	// End condition variables and whatever
-
-	this.draw = function(){
-	}
 
 	// Called every frame
 	this.update = function(){
@@ -261,14 +268,22 @@ function GameSection(game){
 	var some_text = "FOO"
 
 	this.draw = function(h1e){
-		var now = Date.now() // Time in ms
+		var now = Date.now() // Time in ms (for blinking and whatever)
+		// Background
 		h1e.draw_sprite(0, 0, "background")
-		h1e.draw_rect(0, 240, 480, 320-240, "#335522")
-		if(game.place_tooltip_sprite){
-			var mx = h1e.mousex()
-			var my = h1e.mousey()
-			h1e.draw_sprite(mx, my-12, game.place_tooltip_sprite)
+		var green_y = 160
+		h1e.draw_rect(0, green_y, 480, 320-green_y, "#335522")
+		// Tiles
+		for(var y=0; y<TILES_H; y++)
+		for(var x=0; x<TILES_W; x++)
+		{
+			var t = game.tiles.get(x, y)
+			if(t.name == "empty")
+				continue
+			//var prop = tile_properties[t.name] // Unused here
+			h1e.draw_sprite(x*GRID_W, y*GRID_H, "tile_"+t.name)
 		}
+		// Entities
 		game.entities.forEach(function(entity){
 			if(entity.visual === undefined)
 				return
@@ -281,6 +296,12 @@ function GameSection(game){
 				h1e.draw_sprite(p.x*GRID_W, p.y*GRID_H, visual.sprite)
 		})
 
+		// UI stuff
+		if(game.place_tooltip_sprite){
+			var mx = h1e.mousex()
+			var my = h1e.mousey()
+			h1e.draw_sprite(mx, my-12, game.place_tooltip_sprite)
+		}
 		draw_text(h1e, 0, 0, some_text)
 		if(game.message)
 			draw_text(h1e, 0, 10, game.message)
