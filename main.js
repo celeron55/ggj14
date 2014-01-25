@@ -26,7 +26,8 @@ h1e.def_sprite("background", "background"+m, [[0,0,480,360]])
 h1e.def_sprite("shadow", "special", [[0,0,24,24], [12,12]])
 
 var y0 = 0
-var names = ["flower","tree1","tree2","seed","halfgrown","vine"]
+var names = ["flower","tree1","tree2","seed","halfgrown","vine","blueflower",
+		"whiteflower"]
 names.forEach(function(name, i){
 	h1e.def_sprite(name, "guggenheim"+m, [[24*i,y0,24,24]], [12,12])
 })
@@ -133,10 +134,35 @@ function DieTimerComponent(game, frames){
 
 function SpriteVisualComponent(game, sprite){
 	this.sprite = sprite
+	this.get_sprite = function(entity){
+		return this.sprite
+	}
 }
 
 function StatVisualComponent(game, statrows){
 	this.statrows = statrows // [{icon:"sprite", text:"+1"}, ...]
+}
+
+function GeneVisualComponent(game){
+	this.get_sprite = function(entity){
+		var genes = entity.genes.current
+		if(genes === undefined)
+			return "icon_growth" // Failure
+		var best_gene = undefined
+		var best_value = 0
+		var genenames = ["life","growth","absorb"]
+		genenames.forEach(function(name){
+			if(genes[name] > best_value){
+				best_value = genes[name]
+				best_gene = name
+			}
+		})
+		if(best_gene == "absorb")
+			return "blueflower"
+		if(best_gene == "life")
+			return "whiteflower"
+		return "flower"
+	}
 }
 
 function PositionComponent(game, x, y){
@@ -266,8 +292,8 @@ function SeedComponent(game, interval_frames){
 	}
 
 	this.grow = function(entity){
-		entity.visual = new SpriteVisualComponent(game, "flower")
-		entity.seed = false
+		entity.visual = new GeneVisualComponent(game)
+		entity.seed = undefined
 		entity.plant = new PlantComponent(game, 2*FPS)
 	}
 }
@@ -275,7 +301,7 @@ function SeedComponent(game, interval_frames){
 function create_flower_entity(game, x, y, interval_frames, genes){
 	h1e.checkobject(genes)
 	return {
-		visual: new SpriteVisualComponent(game, "flower"),
+		visual: new GeneVisualComponent(game),
 		position: new PositionComponent(game, x, y),
 		plant: new PlantComponent(game, interval_frames),
 		genes: new GenesComponent(game, genes),
@@ -442,10 +468,12 @@ function GameSection(game){
 			if(entity.__blink && fl(now/100)%2==0)
 				show = false
 			if(show){
-				if(visual.sprite){
+				var sprite = visual.sprite
+				if(visual.get_sprite)
+					sprite = visual.get_sprite(entity)
+				if(sprite){
 					h1e.draw_sprite(p.x*GRID_W, p.y*GRID_H, "shadow")
-					h1e.draw_sprite(p.x*GRID_W+GRID_W/2, p.y*GRID_H-2,
-							visual.sprite)
+					h1e.draw_sprite(p.x*GRID_W+GRID_W/2, p.y*GRID_H-2, sprite)
 				}
 				if(visual.statrows){
 					var x0 = p.x*GRID_W
