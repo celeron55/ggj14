@@ -233,7 +233,7 @@ function Game(){
 	// Entities or whatever
 	this.entities = []
 	// Create initial entity
-	var life = Math.random()*30*FPS
+	var life = 10*FPS + Math.random()*30*FPS
 	var growth = Math.random()*2
 	var absorb = Math.random()*2
 	var genes = new Genes(life, growth, absorb)
