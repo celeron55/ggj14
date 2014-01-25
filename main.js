@@ -166,7 +166,7 @@ function get_best_gene(genes){
 }
 function is_flat_genes(genes) {
 	var d = get_gene_d(genes)
-	return (d < 8)
+	return (d < 6)
 }
 
 function GeneVisualComponent(game){
