@@ -45,12 +45,12 @@ function generate_ground(tiles, seed){
 			continue
 		// Ground area
 		var name = "brown"
-		var f = noise_module.noise2d_perlin_abs(x/10, y/10, seed, 2, 0.5)
-		if(f < 0.5)
-			name = "grey"
-		var f = noise_module.noise2d_perlin_abs(x/10, y/10, seed+1, 2, 0.5)
-		if(f < 0.3)
+		var f = noise_module.noise2d_perlin(x/4, y/4, seed, 3, 0.5)
+		if(f < 0.0)
 			name = "red"
+		var f = noise_module.noise2d_perlin_abs(x/5, y/5, seed+1, 3, 0.5)
+		if(f < 0.42)
+			name = "grey"
 		tiles.set(x, y, new Tile(name));
 	}
 }
