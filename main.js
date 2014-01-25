@@ -1,11 +1,14 @@
 var h1e = h1edpi_module
 var fl = Math.floor
+var rn = Math.round
 var rand = Math.random
 
 var FPS = 60
 var TICK_LENGTH = 1000/FPS
 var SCREEN_W = 480
 var SCREEN_H = 320
+var GRID_W = 16
+var GRID_H = 16
 
 h1e.bgstyle = "#000000"
 h1e.init($("#main_canvas")[0], SCREEN_W, SCREEN_H, FPS)
@@ -85,20 +88,31 @@ function Position(game, x, y){
 
 function SeedSpawner(game, interval_frames){
 	this.timer = 0
+	this.placeable = false
 
 	this.on_update = function(entity){
-		if(this.timer < 0)
-			return
-		this.timer++
-		if(this.timer >= interval_frames){
-			// TODO: Do something that makes seed placing interaction possible
-			entity.visual.blinking = true
-			//this.timer = 0 // Restart timer
-			this.timer = -1 // Disable timer
+		if(this.timer >= 0){
+			this.timer++
+			if(this.timer >= interval_frames){
+				//this.timer = 0 // Restart timer
+				this.timer = -1 // Disable timer
+				this.placeable = true
+				entity.visual.blinking = true
+			}
+		}
+		if(this.placeable){
 			this.on_click = function(entity){
 				entity.visual.blinking = false
 				game.message = "Click to place"
-				game.on_click_anything = function(x, y){
+				game.on_click_anything = function(mx, my){
+					var x = fl(mx/GRID_W)
+					var y = fl(my/GRID_H)
+					if(game.get_entity_at(x, y)){
+						game.message = "Cannot place on existing entity"
+						if(this.placeable)
+							entity.visual.blinking = true
+						return
+					}
 					game.message = undefined
 					var e1 = {
 						visual: new Visual(game, "thing"),
@@ -106,6 +120,7 @@ function SeedSpawner(game, interval_frames){
 						seed_spawner: new SeedSpawner(game, 4*FPS),
 					}
 					game.entities.push(e1)
+					this.placeable = false
 				}
 			}
 		}
@@ -125,7 +140,7 @@ function Game(){
 	this.entities = []
 	var e1 = {
 		visual: new Visual(this, "thing"),
-		position: new Position(this, 240, 230),
+		position: new Position(this, 15, 15),
 		seed_spawner: new SeedSpawner(this, 1*FPS),
 	}
 	this.entities.push(e1)
@@ -143,12 +158,12 @@ function Game(){
 			if(entity.visual === undefined)
 				return
 			var visual = entity.visual
-			var position = entity.position
+			var p = entity.position
 			var show = true
-			if(visual.blinking && Math.floor(now/100)%2==0)
+			if(visual.blinking && fl(now/100)%2==0)
 				show = false
 			if(show)
-				h1e.draw_sprite(position.x, position.y, visual.sprite)
+				h1e.draw_sprite(p.x*GRID_W, p.y*GRID_H, visual.sprite)
 		})
 	}
 
@@ -164,6 +179,18 @@ function Game(){
 		// Return true if something changed (will be redrawn)
 		return true
 	}
+
+	this.get_entity_at = function(x, y){
+		var found_entity = undefined
+		var found = game.entities.some(function(entity){
+			var p = entity.position
+			if(p.x == x && p.y == y){
+				found_entity = entity
+				return true
+			}
+		})
+		return found_entity
+	}
 }
 
 function GameSection(game){
@@ -178,6 +205,8 @@ function GameSection(game){
 		draw_text(h1e, 0, 0, some_text)
 		if(game.message)
 			draw_text(h1e, 0, 10, game.message)
+		// Visualize what is selected
+		// TODO
 	}
 	this.event = function(h1e, event){
 		if(event.type == "keydown"){
@@ -200,10 +229,11 @@ function GameSection(game){
 			}
 			// Else entity that is here
 			var done = game.entities.some(function(entity){
-				if(entity.visual === undefined)
-					return
 				var p = entity.position
-				if(Math.abs(mx - p.x) <= 8 && Math.abs(my - p.y) <= 8){
+				if(p === undefined)
+					return
+				if(Math.abs(mx - p.x*GRID_W) <= GRID_W/2 &&
+						Math.abs(my - p.y*GRID_H) <= GRID_H/2){
 					for(var component_name in entity){
 						var c = entity[component_name]
 						if(c && c.on_click){
