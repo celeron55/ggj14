@@ -16,12 +16,15 @@ h1e.init($("#main_canvas")[0], SCREEN_W, SCREEN_H, FPS)
 h1e.add_image("background", "background.png")
 h1e.add_image("sprites", "sprites.png")
 h1e.add_image("font", "font.png")
-h1e.add_image("guggenheim", "guggenheim.png")
+h1e.add_image("guggenheim", "guggenheim2.png")
 
 var m = "|mask=#000000"
 h1e.def_sprite("background", "background"+m, [[0,0,480,360]])
-h1e.def_sprite("thing", "guggenheim"+m, [[0,0,24,24],[24,0,24,24]], [12,12])
 //h1e.def_sprite("thing2", "sprites"+m, [[0,0,24,24],[24,0,24,24]], [12,12])
+var names = ["thing","tree1","tree2","what","seed"]
+names.forEach(function(name, i){
+	h1e.def_sprite(name, "guggenheim"+m, [[24*i,0,24,24]], [12,12])
+})
 
 var font_frames = []
 for(var i=0; i<128; i++){
@@ -107,14 +110,16 @@ function SeedSpawner(game, interval_frames){
 		if(this.placeable){
 			this.on_click = function(entity){
 				game.message = "Click to place"
+				game.place_tooltip_sprite = "seed"
 				game.on_click_anything = function(mx, my){
+					game.message = undefined
+					game.place_tooltip_sprite = undefined
 					var x = rn(mx/GRID_W)
 					var y = rn(my/GRID_H)
 					if(game.get_entity_at(x, y)){
 						game.message = "Cannot place on existing entity"
 						return
 					}
-					game.message = undefined
 					var e1 = {
 						visual: new Visual(game, "thing"),
 						position: new Position(game, x, y),
@@ -132,9 +137,9 @@ function Game(){
 	var that = this
 	var game = this
 
-	// Game-wide publicly settable callbacks
+	// Game-wide publicly settable callbacks and stuff
 	this.on_click_anything = undefined // Cleared before calling
-
+	this.place_tooltip_sprite = undefined
 	this.message = undefined
 
 	// Entities or whatever
@@ -152,20 +157,6 @@ function Game(){
 	// End condition variables and whatever
 
 	this.draw = function(){
-		var now = Date.now() // Time in ms
-		h1e.draw_sprite(0, 0, "background")
-		h1e.draw_rect(0, 240, 480, 320-240, "#335522")
-		this.entities.forEach(function(entity){
-			if(entity.visual === undefined)
-				return
-			var visual = entity.visual
-			var p = entity.position
-			var show = true
-			if(entity.__blink && fl(now/100)%2==0)
-				show = false
-			if(show)
-				h1e.draw_sprite(p.x*GRID_W, p.y*GRID_H, visual.sprite)
-		})
 	}
 
 	// Called every frame
@@ -207,8 +198,26 @@ function GameSection(game){
 	var some_text = "FOO"
 
 	this.draw = function(h1e){
-		mouse_callbacks = []
-		game.draw()
+		var now = Date.now() // Time in ms
+		h1e.draw_sprite(0, 0, "background")
+		h1e.draw_rect(0, 240, 480, 320-240, "#335522")
+		if(game.place_tooltip_sprite){
+			var mx = h1e.mousex()
+			var my = h1e.mousey()
+			h1e.draw_sprite(mx, my-12, game.place_tooltip_sprite)
+		}
+		game.entities.forEach(function(entity){
+			if(entity.visual === undefined)
+				return
+			var visual = entity.visual
+			var p = entity.position
+			var show = true
+			if(entity.__blink && fl(now/100)%2==0)
+				show = false
+			if(show)
+				h1e.draw_sprite(p.x*GRID_W, p.y*GRID_H, visual.sprite)
+		})
+
 		draw_text(h1e, 0, 0, some_text)
 		if(game.message)
 			draw_text(h1e, 0, 10, game.message)
