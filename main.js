@@ -21,7 +21,7 @@ h1e.add_image("guggenheim", "guggenheim2.png")
 var m = "|mask=#000000"
 h1e.def_sprite("background", "background"+m, [[0,0,480,360]])
 //h1e.def_sprite("thing2", "sprites"+m, [[0,0,24,24],[24,0,24,24]], [12,12])
-var names = ["flower","tree1","tree2","what","seed"]
+var names = ["flower","tree1","tree2","seed","halfgrown","vine"]
 names.forEach(function(name, i){
 	h1e.def_sprite(name, "guggenheim"+m, [[24*i,0,24,24]], [12,12])
 })
@@ -112,6 +112,7 @@ function SeedSpawner(game, interval_frames){
 			die(game, entity)
 			return
 		}
+		// okei, this ei ehkä viittaa siihen mihin luulen... 
 		this.life--
 		
 		if(this.timer > 0){
@@ -130,8 +131,8 @@ function SeedSpawner(game, interval_frames){
 				game.on_click_anything = function(mx, my){
 					game.message = undefined
 					game.place_tooltip_sprite = undefined
-					var x = rn(mx/GRID_W)
-					var y = rn(my/GRID_H)
+					var x = rn((mx-GRID_W/2)/GRID_W)
+					var y = rn((my-GRID_H/2)/GRID_H)
 					if(game.get_entity_at(x, y)){
 						game.message = "Cannot place on existing entity"
 						return
@@ -160,6 +161,9 @@ function FlowerSpawner(game, interval_frames){
 	this.on_update = function(entity){
 		if(this.timer >= 0){
 			this.timer++
+			if(this.timer == interval_frames-30){
+				entity.visual = new Visual(game, "halfgrown")
+			}
 			if(this.timer >= interval_frames){
 				//this.timer = 0 // Restart timer
 				this.timer = -1 // Disable timer
