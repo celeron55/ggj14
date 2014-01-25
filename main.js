@@ -73,20 +73,20 @@ function roundify(v)
 	return Math.round(v/f)*f
 }
 
-function Visual(sprite){
+function Visual(game, sprite){
 	this.sprite = sprite
 	this.blinking = false
 }
 
-function Position(x, y){
+function Position(game, x, y){
 	this.x = x
 	this.y = y
 }
 
-function SeedSpawner(interval_frames){
+function SeedSpawner(game, interval_frames){
 	this.timer = 0
 
-	this.update = function(entity){
+	this.on_update = function(entity){
 		if(this.timer < 0)
 			return
 		this.timer++
@@ -95,6 +95,18 @@ function SeedSpawner(interval_frames){
 			entity.visual.blinking = true
 			this.timer = 0 // Restart timer
 			//this.timer = -1 // Disable timer
+			this.on_click = function(entity){
+				game.message = "Click to place"
+				game.on_click_anything = function(x, y){
+					game.message = undefined
+					var e1 = {
+						visual: new Visual(game, "thing"),
+						position: new Position(game, x, y),
+						seed_spawner: new SeedSpawner(game, 4*FPS),
+					}
+					game.entities.push(e1)
+				}
+			}
 		}
 	}
 }
@@ -103,14 +115,19 @@ function Game(){
 	var that = this
 	var game = this
 
+	// Game-wide publicly settable callbacks
+	this.on_click_anything = undefined // Cleared before calling
+
+	this.message = undefined
+
 	// Entities or whatever
-	var entities = []
+	this.entities = []
 	var e1 = {
-		visual: new Visual("thing"),
-		position: new Position(240, 230),
-		seed_spawner: new SeedSpawner(3*FPS),
+		visual: new Visual(this, "thing"),
+		position: new Position(this, 240, 230),
+		seed_spawner: new SeedSpawner(this, 1*FPS),
 	}
-	entities.push(e1)
+	this.entities.push(e1)
 
 	// Other resources
 	// TODO
@@ -121,7 +138,7 @@ function Game(){
 		var now = Date.now() // Time in ms
 		h1e.draw_sprite(0, 0, "background")
 		h1e.draw_rect(0, 240, 480, 320-240, "#335522")
-		entities.forEach(function(entity){
+		this.entities.forEach(function(entity){
 			if(entity.visual === undefined)
 				return
 			var visual = entity.visual
@@ -136,11 +153,11 @@ function Game(){
 
 	// Called every frame
 	this.update = function(){
-		entities.forEach(function(entity){
+		this.entities.forEach(function(entity){
 			for(var component_name in entity){
 				var c = entity[component_name]
-				if(c && c.update)
-					c.update(entity)
+				if(c && c.on_update)
+					c.on_update(entity)
 			}
 		})
 		// Return true if something changed (will be redrawn)
@@ -158,6 +175,8 @@ function GameSection(game){
 		mouse_callbacks = []
 		game.draw()
 		draw_text(h1e, 0, 0, some_text)
+		if(game.message)
+			draw_text(h1e, 0, 10, game.message)
 	}
 	this.event = function(h1e, event){
 		if(event.type == "keydown"){
@@ -170,6 +189,31 @@ function GameSection(game){
 			var mx = h1e.mousex()
 			var my = h1e.mousey()
 			some_text = "CLICKED AT ("+mx+", "+my+")"
+			// First global callback
+			if(game.on_click_anything){
+				var cb = game.on_click_anything
+				game.on_click_anything = undefined
+				// Now this callback can set game.on_click_anything if it wants
+				cb(mx, my)
+				return true // Handled
+			}
+			// Else entity that is here
+			var done = game.entities.some(function(entity){
+				if(entity.visual === undefined)
+					return
+				var p = entity.position
+				if(Math.abs(mx - p.x) <= 8 && Math.abs(my - p.y) <= 8){
+					for(var component_name in entity){
+						var c = entity[component_name]
+						if(c && c.on_click){
+							c.on_click(entity)
+							return true
+						}
+					}
+				}
+			})
+			if(done)
+				return true // Handled
 		}
 		if(event.type == "mouseup"){
 		}
