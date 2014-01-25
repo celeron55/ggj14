@@ -208,7 +208,7 @@ function PlantComponent(game, interval_frames){
 	// Initialisoidaan ensimmäisellä updatella kun entiteetti on täysissä voimissaan
 	this.life = undefined // frameja jäljellä kullakin hetkellä
 	this.growth_r = undefined // kasvualue (tilejä) (ei muutu)
-	this.absorbed_amount = undefined // veden määrä kullakin hetkellä (gene=max)
+	this.absorbed_amount = 0
 
 	this.should_blink = function(entity){
 		return (this.life < SPEED_FACTOR*2)
@@ -341,7 +341,20 @@ function RainVisualComponent(game){
 
 function RainComponent(game){
 	this.on_update = function(entity){
-		// TODO
+		game.entities.forEach(function(entity){
+			var plant = entity.plant
+			if(plant === undefined)
+				return
+			if(entity.genes === undefined)
+				return
+			var genes = entity.genes.current
+			if(!genes)
+				return
+			var best_gene = get_best_gene(genes)
+			if(best_gene !== "absorb")
+				return
+			plant.absorbed_amount = genes.absorb
+		})
 	}
 }
 
@@ -510,7 +523,8 @@ function draw_statrows(x0, y0, statrows, rect_w){
 	//console.log("x0="+x0+", y0="+y0)
 	h1e.draw_rect(x0, y0, rect_w, 8*nrows, "rgba(0,0,0,0.5)")
 	statrows.forEach(function(row, i){
-		h1e.draw_sprite(x0, y0 + i*8, row.icon)
+		if(row.icon !== undefined)
+			h1e.draw_sprite(x0, y0 + i*8, row.icon)
 		draw_text(h1e, x0+16, y0 + i*8, row.text)
 	})
 }
@@ -618,6 +632,10 @@ function GameSection(game){
 				if(entity.genes !== undefined && !found){
 					var genes = entity.genes.current
 					var statrows = create_unchanged_gene_statrows(genes)
+					if(entity.plant){
+						var a = entity.plant.absorbed_amount
+						statrows.push({text: "absorbed: "+a})
+					}
 					var x = mx+16
 					var y = my+16
 					draw_statrows(x, y, statrows, 35)
