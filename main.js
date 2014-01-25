@@ -21,7 +21,7 @@ h1e.add_image("guggenheim", "guggenheim2.png")
 var m = "|mask=#000000"
 h1e.def_sprite("background", "background"+m, [[0,0,480,360]])
 //h1e.def_sprite("thing2", "sprites"+m, [[0,0,24,24],[24,0,24,24]], [12,12])
-var names = ["thing","tree1","tree2","what","seed"]
+var names = ["flower","tree1","tree2","what","seed"]
 names.forEach(function(name, i){
 	h1e.def_sprite(name, "guggenheim"+m, [[24*i,0,24,24]], [12,12])
 })
@@ -120,16 +120,20 @@ function SeedSpawner(game, interval_frames){
 						game.message = "Cannot place on existing entity"
 						return
 					}
-					var e1 = {
-						visual: new Visual(game, "thing"),
-						position: new Position(game, x, y),
-						seed_spawner: new SeedSpawner(game, 4*FPS),
-					}
+					var e1 = create_flower_entity(game, x, y, 4*FPS)
 					game.entities.push(e1)
 					that.placeable = false
 				}
 			}
 		}
+	}
+}
+
+function create_flower_entity(game, x, y, interval_frames){
+	return {
+		visual: new Visual(game, "flower"),
+		position: new Position(game, x, y),
+		seed_spawner: new SeedSpawner(game, interval_frames),
 	}
 }
 
@@ -144,12 +148,8 @@ function Game(){
 
 	// Entities or whatever
 	this.entities = []
-	var e1 = {
-		visual: new Visual(this, "thing"),
-		position: new Position(this, 15, 15),
-		seed_spawner: new SeedSpawner(this, 1*FPS),
-	}
-	this.entities.push(e1)
+	// Create initial entity
+	this.entities.push(create_flower_entity(game, 15, 15, 1*FPS))
 
 	// Other resources
 	// TODO
