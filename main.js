@@ -359,13 +359,19 @@ function GameSection(game){
 				if(entity.genes !== undefined){
 					var genes = entity.genes.current
 					hover_info = ""
-					hover_info += "life: "+pad(genes.life, 3)
-					hover_info += ", growth: "+pad(genes.growth, 3)
-					hover_info += ", absorb: "+pad(genes.absorb, 3)
+					hover_info += "life  : "+pad(genes.life/FPS, 1)+" s\n"
+					hover_info += "growth: "+pad(genes.growth, 3)+"\n"
+					hover_info += "absorb: "+pad(genes.absorb, 3)
 				}
 			}
-			if(hover_info)
-				draw_text(h1e, 130, 20, hover_info)
+			if(hover_info){
+				/*var x = 200
+				var y = 30*/
+				var x = mx+16
+				var y = my-16
+				h1e.draw_rect(x, y, 80, 8*3, "rgba(0,0,0,0.5)")
+				draw_text(h1e, x, y, hover_info)
+			}
 		}
 	}
 	this.event = function(h1e, event){
