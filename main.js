@@ -19,9 +19,11 @@ h1e.add_image("background", "background.png")
 h1e.add_image("sprites", "sprites.png")
 h1e.add_image("font", "font.png")
 h1e.add_image("guggenheim", "guggenheim2.png")
+h1e.add_image("special", "special.png")
 
 var m = "|mask=#000000"
 h1e.def_sprite("background", "background"+m, [[0,0,480,360]])
+h1e.def_sprite("shadow", "special", [[0,0,24,24], [12,12]])
 
 var y0 = 0
 var names = ["flower","tree1","tree2","seed","halfgrown","vine"]
@@ -292,9 +294,11 @@ function GameSection(game){
 			var show = true
 			if(entity.__blink && fl(now/100)%2==0)
 				show = false
-			if(show)
+			if(show){
+				h1e.draw_sprite(p.x*GRID_W, p.y*GRID_H, "shadow")
 				h1e.draw_sprite(p.x*GRID_W+GRID_W/2, p.y*GRID_H,
 						visual.sprite)
+			}
 		})
 
 		// UI stuff
