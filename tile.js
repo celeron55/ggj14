@@ -9,9 +9,11 @@ var tile_properties = {
 		genes: new Genes(1.2, 0.8, 0.8),
 	},
 }
+
 function Tile(name){
 	this.name = name
 }
+
 function Tiles(w, h){
 	this.w = w
 	this.h = h
@@ -28,6 +30,7 @@ function Tiles(w, h){
 		return this.tiles[i] = t
 	}
 }
+
 function generate_ground(tiles, seed){
 	for(var y=0; y<tiles.h; y++)
 	for(var x=0; x<tiles.w; x++)

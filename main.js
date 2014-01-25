@@ -158,8 +158,23 @@ function PlantComponent(game, interval_frames){
 						return
 					}
 					h1e.checkobject(entity.genes)
-					var e1 = create_seed_entity(game, x, y, 2*FPS,
-							entity.genes.current)
+					var tile = game.tiles.get(x, y)
+					if(tile === undefined){
+						game.message = "Cannot place here"
+						return
+					}
+					h1e.checkobject(tile_properties)
+					var prop = tile_properties[tile.name]
+					if(prop === undefined){
+						game.message = "Cannot place here"
+						return
+					}
+					var current_genes = entity.genes.current
+					//console.log("current_genes: "+h1e.dump(current_genes))
+					var new_genes = current_genes.clone()
+					//console.log("new_genes: "+h1e.dump(new_genes))
+					new_genes.mutate(prop.genes)
+					var e1 = create_seed_entity(game, x, y, 2*FPS, new_genes)
 					game.entities.push(e1)
 					that.placeable = false
 					// saat laittaa uudelleen jos kasvi elää niin kauan
