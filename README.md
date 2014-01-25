@@ -7,7 +7,7 @@ Juuh elikkäs todoa
 ..-maaperän vaikutus (mutaatio)  CHECK  
 ..-balansointi ∞  
 -vaikutusalue (johon kukin kasvi voi laitella siemeniä/vettä)  
-..-growth kasvattaa aluetta
+..-growth kasvattaa aluetta  
 -vesi  
 ..-vain absorboijat keräävät  
 ....-luovuttavat muille pitääkseen ne hengissä spawnaukseen  
