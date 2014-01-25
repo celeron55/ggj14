@@ -210,6 +210,9 @@ function PlantComponent(game, interval_frames){
 	this.absorb = undefined // veden imukyky
 
 	this.should_blink = function(entity){
+		return (this.life < FPS*2)
+	}
+	this.should_hilight = function(entity){
 		return this.placeable
 	}
 
@@ -290,10 +293,6 @@ function SeedComponent(game, interval_frames){
 
 	this.timer = 0
 
-	this.should_blink = function(entity){
-		return this.placeable
-	}
-
 	this.on_update = function(entity){
 		if(this.timer >= 0){
 			this.timer++
@@ -371,7 +370,8 @@ function Game(){
 	// Called every frame
 	this.update = function(){
 		this.entities.forEach(function(entity){
-			entity.__blink = undefined
+			entity.__blink = undefined // Recalculate
+			entity.__hilight = undefined // Recalculate
 			for(var component_name in entity){
 				var c = entity[component_name]
 				if(c && c.on_update !== undefined){
@@ -380,6 +380,10 @@ function Game(){
 				if(c && c.should_blink !== undefined){
 					if(c.should_blink())
 						entity.__blink = true
+				}
+				if(c && c.should_hilight !== undefined){
+					if(c.should_hilight())
+						entity.__hilight = true
 				}
 			}
 		})
@@ -485,6 +489,11 @@ function GameSection(game){
 			if(entity.__blink && fl(now/100)%2==0)
 				show = false
 			if(show){
+				var hilight = entity.__hilight
+				if(hilight){
+					h1e.draw_rect(p.x*GRID_W, p.y*GRID_H, 16, 16,
+							"rgba(255,255,255,0.5)")
+				}
 				var sprite = visual.sprite
 				if(visual.get_sprite)
 					sprite = visual.get_sprite(entity)
