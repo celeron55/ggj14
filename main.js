@@ -66,7 +66,7 @@ function draw_text(h1e, x, y, text, fontname)
 	}
 }
 
-function pad(n, w, z, d)
+function pad(n, d, w, z) // number, precision, width, padchar
 {
 	w = w || 1
 	if(typeof(n) == "number"){
@@ -268,6 +268,21 @@ function Game(){
 		return found_entity
 	}
 
+	this.get_entities_under_mouse = function(mx, my){
+		var found_entities = []
+		game.entities.some(function(entity){
+			var p = entity.position
+			if(p === undefined)
+				return
+			var r = GRID_W*0.7 // A bit larger area
+			if(Math.abs(mx - p.x*GRID_W - GRID_W/2) <= r &&
+					Math.abs(my - p.y*GRID_H) <= r){
+				found_entities.push(entity)
+			}
+		})
+		return found_entities
+	}
+
 	this.delete_entity = function(entity){
 		// oletetaan, ettei ole tapettu jo
 		// varmaan voisi tehdä bufferin, ettei skipata seuraavaa elementtiä
@@ -323,7 +338,27 @@ function GameSection(game){
 		if(game.message)
 			draw_text(h1e, 0, 10, game.message)
 		// Visualize what is selected
-		// TODO
+		var mx = h1e.mousex()
+		var my = h1e.mousey()
+		if(game.on_click_anything){
+			// Do nothing
+		} else {
+			// Show information about hovered entity
+			var hover_info = undefined
+			var hover_entities = game.get_entities_under_mouse(mx, my)
+			if(hover_entities.length >= 1){
+				var entity = hover_entities[0]
+				if(entity.genes !== undefined){
+					var genes = entity.genes.current
+					hover_info = ""
+					hover_info += "life: "+pad(genes.life, 3)
+					hover_info += ", growth: "+pad(genes.growth, 3)
+					hover_info += ", absorb: "+pad(genes.absorb, 3)
+				}
+			}
+			if(hover_info)
+				draw_text(h1e, 130, 20, hover_info)
+		}
 	}
 	this.event = function(h1e, event){
 		if(event.type == "keydown"){
@@ -348,20 +383,13 @@ function GameSection(game){
 				return true // Handled
 			}
 			// Else entity that is here
-			var done = game.entities.some(function(entity){
-				var p = entity.position
-				if(p === undefined)
-					return
-				//var r = GRID_W/2 // One grid tile
-				var r = GRID_W*0.7 // A bit larger area
-				if(Math.abs(mx - p.x*GRID_W - GRID_W/2) <= r &&
-						Math.abs(my - p.y*GRID_H) <= r){
-					for(var component_name in entity){
-						var c = entity[component_name]
-						if(c && c.on_click){
-							c.on_click(entity)
-							return true
-						}
+			var hover_entities = game.get_entities_under_mouse(mx, my)
+			var done = hover_entities.some(function(entity){
+				for(var component_name in entity){
+					var c = entity[component_name]
+					if(c && c.on_click){
+						c.on_click(entity)
+						return true
 					}
 				}
 			})
