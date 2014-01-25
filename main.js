@@ -148,7 +148,7 @@ function AreaVisualComponent(game, r){
 	this.tile_area_r = r
 }
 
-function flat(genes, genenames) {
+function is_flat_genes(genes) {
 	var genevalues = genes.get_array()
 	var min = undefined
 	var max = undefined
@@ -160,25 +160,21 @@ function flat(genes, genenames) {
 	})
 	return (max - min < 8)
 }
+function get_best_gene(genes){
+	var genevalues = genes.get_array()
+	return genevalues[genevalues.length-1].name
+}
 
 function GeneVisualComponent(game){
 	this.get_sprite = function(entity){
 		var genes = entity.genes.current
 		if(genes === undefined)
 			return "icon_growth" // Failure
-		var best_gene = undefined
-		var best_value = 0
-		var genenames = ["life","growth","absorb"]
 		
-		if (flat(genes,genenames)) 
+		if (is_flat_genes(genes))
 			return "noobbush"
-		
-		genenames.forEach(function(name){
-			if(genes[name] > best_value){
-				best_value = genes[name]
-				best_gene = name
-			}
-		})
+
+		var best_gene = get_best_gene(genes)
 		if(best_gene == "absorb")
 			return "blueflower"
 		if(best_gene == "life")
@@ -210,9 +206,9 @@ function PlantComponent(game, interval_frames){
 	this.placeable = false
 
 	// Initialisoidaan ensimmäisellä updatella kun entiteetti on täysissä voimissaan
-	this.life = undefined // frameja
-	this.growth_r = undefined // kasvualue (tilejä)
-	this.absorb = undefined // veden imukyky
+	this.life = undefined // frameja jäljellä kullakin hetkellä
+	this.growth_r = undefined // kasvualue (tilejä) (ei muutu)
+	this.absorbed_amount = undefined // veden määrä kullakin hetkellä (gene=max)
 
 	this.should_blink = function(entity){
 		return (this.life < SPEED_FACTOR*2)
@@ -236,11 +232,9 @@ function PlantComponent(game, interval_frames){
 				this.growth_r = min_r
 		}
 		if (this.life !== undefined && this.life<=0) {
-			// miten entityn tappaminen toimii ja thisin ei?!?!?!?!?!
 			game.delete_entity(entity)
 			return
 		}
-		// okei, this ei ehkä viittaa siihen mihin luulen... 
 		this.life--
 		
 		if(this.timer > 0){
