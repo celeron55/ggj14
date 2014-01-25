@@ -93,9 +93,10 @@ function SeedSpawner(game, interval_frames){
 		if(this.timer >= interval_frames){
 			// TODO: Do something that makes seed placing interaction possible
 			entity.visual.blinking = true
-			this.timer = 0 // Restart timer
-			//this.timer = -1 // Disable timer
+			//this.timer = 0 // Restart timer
+			this.timer = -1 // Disable timer
 			this.on_click = function(entity){
+				entity.visual.blinking = false
 				game.message = "Click to place"
 				game.on_click_anything = function(x, y){
 					game.message = undefined
