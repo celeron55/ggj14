@@ -1,4 +1,4 @@
-function Genes(game, life, growth, absorb){
+function Genes(life, growth, absorb){
 	this.life = life // elinika, TODO: geenien laiffi + veden maara
 	this.growth = growth // kasvunopeus
 	this.absorb = absorb // veden imukyky
