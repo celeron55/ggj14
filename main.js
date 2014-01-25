@@ -494,8 +494,8 @@ function Game(){
 	var genes = new Genes(life, growth, absorb)
 	this.entities.push(create_flower_entity(game, 15, 15, 1*SPEED_FACTOR, genes))
 	// Test with water plant
-	var genes = new Genes(life, growth, 20)
-	this.entities.push(create_flower_entity(game, 16, 15, 1*SPEED_FACTOR, genes))
+	//var genes = new Genes(life, growth, 20)
+	//this.entities.push(create_flower_entity(game, 16, 15, 1*SPEED_FACTOR, genes))
 
 	// Global effect handler
 	this.entities.push({
