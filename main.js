@@ -13,10 +13,12 @@ h1e.init($("#main_canvas")[0], SCREEN_W, SCREEN_H, FPS)
 h1e.add_image("background", "background.png")
 h1e.add_image("sprites", "sprites.png")
 h1e.add_image("font", "font.png")
+h1e.add_image("guggenheim", "guggenheim.png")
 
 var m = "|mask=#000000"
 h1e.def_sprite("background", "background"+m, [[0,0,480,360]])
-h1e.def_sprite("thing", "sprites"+m, [[0,0,24,24],[24,0,24,24]], [12,12])
+h1e.def_sprite("thing", "guggenheim"+m, [[0,0,24,24],[24,0,24,24]], [12,12])
+h1e.def_sprite("thing2", "sprites"+m, [[0,0,24,24],[24,0,24,24]], [12,12])
 
 var font_frames = []
 for(var i=0; i<128; i++){
