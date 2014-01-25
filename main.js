@@ -12,7 +12,7 @@ var GRID_H = 16
 var TILES_W = fl(SCREEN_W/GRID_W)
 var TILES_H = fl(SCREEN_H/GRID_H)
 
-h1e.bgstyle = "#000000"
+h1e.bgstyle = "#808080"
 h1e.init($("#main_canvas")[0], SCREEN_W, SCREEN_H, FPS)
 
 h1e.add_image("background", "background.png")
