@@ -99,8 +99,13 @@ function SeedSpawner(game, interval_frames){
 
 	// kannattaa tehdä vähentämällä nollaan, koska voi varioida timeriä
 	this.timer = interval_frames
-	this.life = 15*FPS //TODO: geenien laiffi + veden määrä
 	this.placeable = false
+	
+	// periytyviä attribuutteja
+	// ilmeisesti flowerspawner saa nämä ja välittää eteenpäin
+	this.life = 15*FPS // elinikä, TODO: geenien laiffi + veden määrä
+	this.growth = 1	// kasvunopeus
+	this.absorb = 1 // veden imukyky
 
 	this.should_blink = function(entity){
 		return this.placeable
