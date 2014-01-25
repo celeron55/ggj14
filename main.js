@@ -144,6 +144,10 @@ function StatVisualComponent(game, statrows){
 	this.statrows = statrows // [{icon:"sprite", text:"+1"}, ...]
 }
 
+function AreaVisualComponent(game, r){
+	this.tile_area_r = r
+}
+
 function flat(genes, genenames) {
 	var genevalues = genes.get_array()
 	var min = undefined
@@ -207,7 +211,7 @@ function PlantComponent(game, interval_frames){
 
 	// Initialisoidaan ensimmäisellä updatella kun entiteetti on täysissä voimissaan
 	this.life = undefined // frameja
-	this.growth = undefined // kasvunopeus (frameja?)
+	this.growth_r = undefined // kasvualue (tilejä)
 	this.absorb = undefined // veden imukyky
 
 	this.should_blink = function(entity){
@@ -223,7 +227,13 @@ function PlantComponent(game, interval_frames){
 			h1e.checkobject(entity.genes.current)
 			h1e.checkfinite(entity.genes.current.life)
 			var GENE_TO_FRAMES = 8 * SPEED_FACTOR
-			this.life = entity.genes.current.life * GENE_TO_FRAMES
+			var GROWTH_TO_R = 0.1
+			var random0 = 0.9 + Math.random()*0.2
+			this.life = entity.genes.current.life * GENE_TO_FRAMES * random0
+			this.growth_r = entity.genes.current.growth * GROWTH_TO_R
+			var min_r = 1.1
+			if(this.growth_r < min_r)
+				this.growth_r = min_r
 		}
 		if (this.life !== undefined && this.life<=0) {
 			// miten entityn tappaminen toimii ja thisin ei?!?!?!?!?!
@@ -246,11 +256,25 @@ function PlantComponent(game, interval_frames){
 			if(this.placeable){
 				game.message = "Click to place"
 				game.place_tooltip_sprite = "seed"
+				var p = entity.position
+				var r = this.growth_r
+				var area_visual = {
+					visual: new AreaVisualComponent(game, r),
+					position: new PositionComponent(game, p.x, p.y),
+				}
+				game.entities.push(area_visual)
+
 				game.on_click_anything = function(mx, my){
+					game.delete_entity(area_visual)
 					game.message = undefined
 					game.place_tooltip_sprite = undefined
 					var x = rn((mx-GRID_W/2)/GRID_W)
 					var y = rn((my-GRID_H/2)/GRID_H)
+					var d = pos_distance(x, y, p.x, p.y)
+					if(d > that.growth_r){
+						game.message = "Out of range of this plant"
+						return
+					}
 					if(game.get_entity_at(x, y)){
 						game.message = "Cannot place on existing entity"
 						return
@@ -396,7 +420,7 @@ function Game(){
 		var found_entity = undefined
 		var found = game.entities.some(function(entity){
 			var p = entity.position
-			if(p.x == x && p.y == y){
+			if(p && p.x == x && p.y == y){
 				found_entity = entity
 				return true
 			}
@@ -453,6 +477,12 @@ function draw_statrows(x0, y0, statrows, rect_w){
 	})
 }
 
+function pos_distance(x0, y0, x1, y1){
+	var dx = x1 - x0
+	var dy = y1 - y0
+	return Math.sqrt(dx*dx + dy*dy)
+}
+
 function GameSection(game){
 	var that = this
 	game = game ? game : new Game()
@@ -504,6 +534,17 @@ function GameSection(game){
 					var x0 = p.x*GRID_W
 					var y0 = p.y*GRID_H
 					draw_statrows(x0, y0, visual.statrows)
+				}
+				if(visual.tile_area_r !== undefined){
+					for(var y=0; y<TILES_H; y++)
+					for(var x=0; x<TILES_W; x++)
+					{
+						var d = pos_distance(x, y, p.x, p.y)
+						if(d > visual.tile_area_r)
+							continue
+						h1e.draw_rect(x*GRID_W, y*GRID_H, 16, 16,
+								"rgba(70,200,50,0.3)")
+					}
 				}
 			}
 		})
