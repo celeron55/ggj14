@@ -11,6 +11,7 @@ var GRID_W = 16
 var GRID_H = 16
 var TILES_W = fl(SCREEN_W/GRID_W)
 var TILES_H = fl(SCREEN_H/GRID_H)
+var SPEED_FACTOR = FPS*2
 
 h1e.bgstyle = "#000000"
 h1e.init($("#main_canvas")[0], SCREEN_W, SCREEN_H, FPS)
@@ -210,7 +211,7 @@ function PlantComponent(game, interval_frames){
 	this.absorb = undefined // veden imukyky
 
 	this.should_blink = function(entity){
-		return (this.life < FPS*2)
+		return (this.life < SPEED_FACTOR*2)
 	}
 	this.should_hilight = function(entity){
 		return this.placeable
@@ -221,7 +222,7 @@ function PlantComponent(game, interval_frames){
 			h1e.checkobject(entity.genes)
 			h1e.checkobject(entity.genes.current)
 			h1e.checkfinite(entity.genes.current.life)
-			var GENE_TO_FRAMES = 2 * FPS
+			var GENE_TO_FRAMES = 8 * SPEED_FACTOR
 			this.life = entity.genes.current.life * GENE_TO_FRAMES
 		}
 		if (this.life !== undefined && this.life<=0) {
@@ -271,12 +272,12 @@ function PlantComponent(game, interval_frames){
 					var new_genes = current_genes.clone()
 					//console.log("new_genes: "+h1e.dump(new_genes))
 					new_genes.mutate(prop.genes)
-					var e1 = create_seed_entity(game, x, y, 2*FPS, new_genes)
+					var e1 = create_seed_entity(game, x, y, 4*SPEED_FACTOR, new_genes)
 					game.entities.push(e1)
 					that.placeable = false
 					// saat laittaa uudelleen jos kasvi elää niin kauan
 					// (ilman vesimekaniikkaa ja geenejä, elää aina siihen asti)
-					that.timer = 6*FPS
+					that.timer = 6*SPEED_FACTOR
 					// Create stat visualization entity
 					var statrows = create_gene_statrows(current_genes, new_genes)
 					var e = create_stat_entity(game, x, y, statrows)
@@ -296,7 +297,7 @@ function SeedComponent(game, interval_frames){
 	this.on_update = function(entity){
 		if(this.timer >= 0){
 			this.timer++
-			if(this.timer == interval_frames-30){
+			if(this.timer == fl(interval_frames/2)){
 				entity.visual = new SpriteVisualComponent(game, "halfgrown")
 			}
 			if(this.timer >= interval_frames){
@@ -310,7 +311,7 @@ function SeedComponent(game, interval_frames){
 	this.grow = function(entity){
 		entity.visual = new GeneVisualComponent(game)
 		entity.seed = undefined
-		entity.plant = new PlantComponent(game, 2*FPS)
+		entity.plant = new PlantComponent(game, 4*SPEED_FACTOR)
 	}
 }
 
@@ -359,7 +360,7 @@ function Game(){
 	var growth = 10
 	var absorb = 10
 	var genes = new Genes(life, growth, absorb)
-	this.entities.push(create_flower_entity(game, 15, 15, 1*FPS, genes))
+	this.entities.push(create_flower_entity(game, 15, 15, 1*SPEED_FACTOR, genes))
 
 	// Other resources
 	this.tiles = new Tiles(TILES_W, TILES_H)
