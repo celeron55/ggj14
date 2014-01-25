@@ -12,7 +12,7 @@ var GRID_H = 16
 var TILES_W = fl(SCREEN_W/GRID_W)
 var TILES_H = fl(SCREEN_H/GRID_H)
 
-h1e.bgstyle = "#808080"
+h1e.bgstyle = "#000000"
 h1e.init($("#main_canvas")[0], SCREEN_W, SCREEN_H, FPS)
 
 h1e.add_image("background", "background.png")
@@ -21,7 +21,7 @@ h1e.add_image("font", "font.png")
 h1e.add_image("guggenheim", "guggenheim2.png")
 h1e.add_image("special", "special.png")
 
-var m = "|mask=#000000"
+var m = "|mask=#808080"
 h1e.def_sprite("background", "background"+m, [[0,0,480,360]])
 h1e.def_sprite("shadow", "special", [[0,0,24,24], [12,12]])
 
