@@ -52,6 +52,9 @@ function Genes(life, growth, absorb){
 						factor = 0.5
 				}
 				this[component_name] *= other_genes[component_name]
+				// Raise low values a bit faster
+				if(this[component_name] < 5 && other_genes[component_name] > 0)
+					this[component_name] += 3.0 * (other_genes[component_name] - 1.0)
 			}
 		}
 	}
