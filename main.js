@@ -27,7 +27,7 @@ h1e.def_sprite("shadow", "special", [[0,0,24,24], [12,12]])
 
 var y0 = 0
 var names = ["flower","tree1","tree2","seed","halfgrown","vine","blueflower",
-		"whiteflower"]
+		"whiteflower","noobbush"]
 names.forEach(function(name, i){
 	h1e.def_sprite(name, "guggenheim"+m, [[24*i,y0,24,24]], [12,12])
 })
@@ -143,6 +143,15 @@ function StatVisualComponent(game, statrows){
 	this.statrows = statrows // [{icon:"sprite", text:"+1"}, ...]
 }
 
+function flat(genes, genenames) {
+	// onko eri geenien välillä eroa enemmän kuin 2
+	// -> onko erikoistunut
+	var comp = genes[genenames[0]]
+	if (Math.abs(comp-genes[genenames[1]]) > 2) return false
+	if (Math.abs(comp-genes[genenames[2]]) > 2) return false
+	return true
+}
+
 function GeneVisualComponent(game){
 	this.get_sprite = function(entity){
 		var genes = entity.genes.current
@@ -151,6 +160,10 @@ function GeneVisualComponent(game){
 		var best_gene = undefined
 		var best_value = 0
 		var genenames = ["life","growth","absorb"]
+		
+		if (flat(genes,genenames)) 
+			return "noobbush"
+		
 		genenames.forEach(function(name){
 			if(genes[name] > best_value){
 				best_value = genes[name]
