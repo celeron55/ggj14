@@ -398,12 +398,14 @@ function GameSection(game){
 							visual.sprite)
 				}
 				if(visual.statrows){
+					var nrows = visual.statrows.length
 					//console.log("statrows: "+h1e.dump(visual.statrows))
 					var x0 = p.x*GRID_W
-					var y0 = p.y*GRID_H - visual.statrows.length*8 - 10
+					var y0 = p.y*GRID_H - nrows*8 - 10
 					/*var x0 = p.x*GRID_W + 20
 					var y0 = p.y*GRID_H - visual.statrows.length*8 + 10*/
 					//console.log("x0="+x0+", y0="+y0)
+					h1e.draw_rect(x0, y0, 32, 8*nrows, "rgba(0,0,0,0.5)")
 					visual.statrows.forEach(function(row, i){
 						h1e.draw_sprite(x0, y0 + i*8, row.icon)
 						draw_text(h1e, x0+12, y0 + i*8, row.text)
