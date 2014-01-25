@@ -3,7 +3,7 @@ var tile_properties = {
 		genes: new Genes(0.9, 1.2, 0.9),
 	},
 	brown: {
-		genes: new Genes(1.0, 0.9, 1.2),
+		genes: new Genes(0.95, 0.9, 1.2),
 	},
 	grey: {
 		genes: new Genes(1.2, 0.9, 0.9),

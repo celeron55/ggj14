@@ -40,7 +40,8 @@ names.forEach(function(name, i){
 })
 
 var y0 = 24+32+16
-var names = ["icon_absorb", "icon_growth", "icon_life"]
+var names = ["icon_absorb", "icon_growth", "icon_life", "icon_seed",
+		"icon_plus1", "icon_minus1"]
 names.forEach(function(name, i){
 	h1e.def_sprite(name, "guggenheim"+m, [[8*i,y0,8,8]], [0,0])
 })
@@ -133,8 +134,9 @@ function DieTimerComponent(game, frames){
 	}
 }
 
-function SpriteVisualComponent(game, sprite){
+function SpriteVisualComponent(game, sprite, have_shadow){
 	this.sprite = sprite
+	this.disable_shadow = have_shadow ? undefined : true
 	this.get_sprite = function(entity){
 		return this.sprite
 	}
@@ -397,6 +399,12 @@ function RainComponent(game){
 						return false // next
 					e2.plant.absorbed_amount += 1
 					e1.plant.absorbed_amount -= 1
+					game.entities.push(create_timed_sprite_entity(
+							game, p2.x-0.2, p2.y, "icon_plus1", 2*FPS))
+					//game.entities.push(create_timed_sprite_entity(
+					//		game, p1.x-0.2, p1.y, "icon_minus1", 2*FPS))
+					game.entities.push(create_timed_sprite_entity(
+							game, p1.x-0.2, p1.y, "icon_absorb", 2*FPS))
 				})
 			})
 		}
@@ -456,6 +464,18 @@ function create_stat_entity(game, x, y, statrows){
 	}
 }
 
+function create_timed_sprite_entity(game, x, y, sprite, frames){
+	h1e.checkfinite(x)
+	h1e.checkfinite(y)
+	h1e.checkstring(sprite)
+	h1e.checkfinite(frames)
+	return {
+		visual: new SpriteVisualComponent(game, sprite, false),
+		position: new PositionComponent(game, x, y),
+		dietimer: new DieTimerComponent(game, frames),
+	}
+}
+
 function Game(){
 	var that = this
 	var game = this
@@ -473,8 +493,9 @@ function Game(){
 	var absorb = 10
 	var genes = new Genes(life, growth, absorb)
 	this.entities.push(create_flower_entity(game, 15, 15, 1*SPEED_FACTOR, genes))
-	//var genes = new Genes(life, growth, 20)
-	//this.entities.push(create_flower_entity(game, 16, 15, 1*SPEED_FACTOR, genes))
+	// Test with water plant
+	var genes = new Genes(life, growth, 20)
+	this.entities.push(create_flower_entity(game, 16, 15, 1*SPEED_FACTOR, genes))
 
 	// Global effect handler
 	this.entities.push({
@@ -633,7 +654,8 @@ function GameSection(game){
 			if(visual.get_sprite)
 				sprite = visual.get_sprite(entity)
 			if(sprite && p !== undefined){
-				h1e.draw_sprite(p.x*GRID_W, p.y*GRID_H, "shadow")
+				if(!visual.disable_shadow)
+					h1e.draw_sprite(p.x*GRID_W, p.y*GRID_H, "shadow")
 				h1e.draw_sprite(p.x*GRID_W+GRID_W/2, p.y*GRID_H-2, sprite)
 			}
 			if(visual.statrows && p !== undefined){
