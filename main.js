@@ -372,17 +372,23 @@ function RainComponent(game){
 			game.entities.some(function(e1){
 				if(!e1.genes || !e1.plant || !e1.position)
 					return false // next
+				if(get_best_gene(e1.genes.current) !== "absorb" ||
+						is_flat_genes(e1.genes.current))
+					return false // next (is not a water plant)
 				// Don't give all water away
-				if(e1.plant.absorbed_amount < 1)
-					return true // break
+				if(e1.plant.absorbed_amount <= 1)
+					return false // next
 				var p1 = e1.position
 				// Go through all entities to give water to nearby plants
 				game.entities.some(function(e2){
 					// Don't give all water away
-					if(e1.plant.absorbed_amount < 1)
+					if(e1.plant.absorbed_amount <= 1)
 						return true // break
 					if(!e2.genes || !e2.plant || !e2.position)
 						return false // next
+					if(get_best_gene(e2.genes.current) === "absorb" &&
+							!is_flat_genes(e2.genes.current))
+						return false // next (is water plant)
 					if(e2.plant.absorbed_amount >= e2.genes.absorb)
 						return false // next
 					var p2 = e2.position
@@ -467,6 +473,8 @@ function Game(){
 	var absorb = 10
 	var genes = new Genes(life, growth, absorb)
 	this.entities.push(create_flower_entity(game, 15, 15, 1*SPEED_FACTOR, genes))
+	//var genes = new Genes(life, growth, 20)
+	//this.entities.push(create_flower_entity(game, 16, 15, 1*SPEED_FACTOR, genes))
 
 	// Global effect handler
 	this.entities.push({
