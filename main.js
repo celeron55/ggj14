@@ -244,6 +244,7 @@ function PlantComponent(game, interval_frames){
 		}
 		if (this.life !== undefined && this.life<=0) {
 			game.delete_entity(entity)
+			$("#pop")[0].play()
 			return
 		}
 		this.life--
@@ -313,6 +314,7 @@ function PlantComponent(game, interval_frames){
 				var e = create_stat_entity(game, x, y, statrows)
 				e.statvisual_owned_by = e1
 				game.entities.push(e)
+				$("#seed")[0].play()
 			}
 		}
 	}
@@ -328,6 +330,9 @@ function SeedComponent(game, interval_frames){
 			this.timer++
 			if(this.timer == fl(interval_frames/2)){
 				entity.visual = new SpriteVisualComponent(game, "halfgrown")
+			}
+			if(this.timer == interval_frames-30) {
+				$("#grow")[0].play()
 			}
 			if(this.timer >= interval_frames){
 				//this.timer = 0 // Restart timer
@@ -767,6 +772,7 @@ $(document).ready(function(){
 	$(window).resize(function(){
 		pad_stuff()
 	})
+	$("#clang")[0].play()
 	//$("#some_audio")[0].volume = 0.7
 	h1e.start()
 })
