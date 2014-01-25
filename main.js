@@ -120,7 +120,7 @@ function SeedSpawner(game, interval_frames){
 						game.message = "Cannot place on existing entity"
 						return
 					}
-					var e1 = create_flower_entity(game, x, y, 4*FPS)
+					var e1 = create_seed_entity(game, x, y, 4*FPS)
 					game.entities.push(e1)
 					that.placeable = false
 				}
@@ -129,11 +129,46 @@ function SeedSpawner(game, interval_frames){
 	}
 }
 
+function FlowerSpawner(game, interval_frames){
+	var that = this
+
+	this.timer = 0
+
+	this.should_blink = function(entity){
+		return this.placeable
+	}
+
+	this.on_update = function(entity){
+		if(this.timer >= 0){
+			this.timer++
+			if(this.timer >= interval_frames){
+				//this.timer = 0 // Restart timer
+				this.timer = -1 // Disable timer
+				this.grow(entity)
+			}
+		}
+	}
+
+	this.grow = function(entity){
+		entity.visual = new Visual(game, "flower")
+		entity.flower_spawner = false
+		entity.seed_spawner = new SeedSpawner(game, 2*FPS)
+	}
+}
+
 function create_flower_entity(game, x, y, interval_frames){
 	return {
 		visual: new Visual(game, "flower"),
 		position: new Position(game, x, y),
 		seed_spawner: new SeedSpawner(game, interval_frames),
+	}
+}
+
+function create_seed_entity(game, x, y){
+	return {
+		visual: new Visual(game, "seed"),
+		position: new Position(game, x, y),
+		flower_spawner: new FlowerSpawner(game, 2*FPS),
 	}
 }
 
