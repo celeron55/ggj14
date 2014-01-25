@@ -144,12 +144,16 @@ function StatVisualComponent(game, statrows){
 }
 
 function flat(genes, genenames) {
-	// onko eri geenien välillä eroa enemmän kuin 2
-	// -> onko erikoistunut
-	var comp = genes[genenames[0]]
-	if (Math.abs(comp-genes[genenames[1]]) > 2) return false
-	if (Math.abs(comp-genes[genenames[2]]) > 2) return false
-	return true
+	var genevalues = genes.get_array()
+	var min = undefined
+	var max = undefined
+	genevalues.forEach(function(gene){
+		if(min === undefined || gene.value < min)
+			min = gene.value
+		if(max === undefined || gene.value > max)
+			max = gene.value
+	})
+	return (max - min < 8)
 }
 
 function GeneVisualComponent(game){
