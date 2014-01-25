@@ -110,19 +110,24 @@ function SeedSpawner(game, interval_frames){
 	// kannattaa tehdä vähentämällä nollaan, koska voi varioida timeriä
 	this.timer = interval_frames
 	this.placeable = false
-	
-	// periytyviä attribuutteja
-	// ilmeisesti flowerspawner saa nämä ja välittää eteenpäin
-	this.life = 15*FPS // elinikä, TODO: geenien laiffi + veden määrä
-	this.growth = 1	// kasvunopeus
-	this.absorb = 1 // veden imukyky
+
+	// Initialisoidaan ensimmäisellä updatella kun entiteetti on täysissä voimissaan
+	this.life = undefined // frameja
+	this.growth = undefined // kasvunopeus (frameja?)
+	this.absorb = undefined // veden imukyky
 
 	this.should_blink = function(entity){
 		return this.placeable
 	}
 
 	this.on_update = function(entity){
-		if (this.life !== undefined && this.life==0) {
+		if(this.life === undefined){
+			h1e.checkobject(entity.genes)
+			h1e.checkobject(entity.genes.current)
+			h1e.checkfinite(entity.genes.current.life)
+			this.life = entity.genes.current.life
+		}
+		if (this.life !== undefined && this.life<=0) {
 			// miten entityn tappaminen toimii ja thisin ei?!?!?!?!?!
 			game.delete_entity(entity)
 			return
@@ -228,7 +233,10 @@ function Game(){
 	// Entities or whatever
 	this.entities = []
 	// Create initial entity
-	var genes = new Genes(Math.random()*2, Math.random()*2, Math.random()*2)
+	var life = Math.random()*30*FPS
+	var growth = Math.random()*2
+	var absorb = Math.random()*2
+	var genes = new Genes(life, growth, absorb)
 	this.entities.push(create_flower_entity(game, 15, 15, 1*FPS, genes))
 
 	// Other resources

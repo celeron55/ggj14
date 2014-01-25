@@ -1,4 +1,7 @@
 function Genes(life, growth, absorb){
+	h1e.checkfinite(life)
+	h1e.checkfinite(growth)
+	h1e.checkfinite(absorb)
 	this.life = life // elinika, TODO: geenien laiffi + veden maara
 	this.growth = growth // kasvunopeus
 	this.absorb = absorb // veden imukyky
