@@ -99,6 +99,10 @@ function Position(game, x, y){
 	this.y = y
 }
 
+function GenesComponent(game, current_genes){
+	this.current_genes = current_genes
+}
+
 function SeedSpawner(game, interval_frames){
 	var that = this
 
@@ -147,7 +151,8 @@ function SeedSpawner(game, interval_frames){
 						game.message = "Cannot place on existing entity"
 						return
 					}
-					var e1 = create_seed_entity(game, x, y, 4*FPS)
+					var genes = new Genes(Math.random()*2, Math.random()*2, Math.random()*2)
+					var e1 = create_seed_entity(game, x, y, 4*FPS, genes)
 					game.entities.push(e1)
 					that.placeable = false
 					// saat laittaa uudelleen jos kasvi elää niin kauan
@@ -189,19 +194,21 @@ function FlowerSpawner(game, interval_frames){
 	}
 }
 
-function create_flower_entity(game, x, y, interval_frames){
+function create_flower_entity(game, x, y, interval_frames, genes){
 	return {
 		visual: new Visual(game, "flower"),
 		position: new Position(game, x, y),
 		seed_spawner: new SeedSpawner(game, interval_frames),
+		genes: new GenesComponent(game, genes),
 	}
 }
 
-function create_seed_entity(game, x, y){
+function create_seed_entity(game, x, y, genes){
 	return {
 		visual: new Visual(game, "seed"),
 		position: new Position(game, x, y),
 		flower_spawner: new FlowerSpawner(game, 2*FPS),
+		genes: new GenesComponent(game, genes),
 	}
 }
 
@@ -217,7 +224,8 @@ function Game(){
 	// Entities or whatever
 	this.entities = []
 	// Create initial entity
-	this.entities.push(create_flower_entity(game, 15, 15, 1*FPS))
+	var genes = new Genes(Math.random()*2, Math.random()*2, Math.random()*2)
+	this.entities.push(create_flower_entity(game, 15, 15, 1*FPS, genes))
 
 	// Other resources
 	this.tiles = new Tiles(TILES_W, TILES_H)
