@@ -296,7 +296,7 @@ function GameSection(game){
 				show = false
 			if(show){
 				h1e.draw_sprite(p.x*GRID_W, p.y*GRID_H, "shadow")
-				h1e.draw_sprite(p.x*GRID_W+GRID_W/2, p.y*GRID_H,
+				h1e.draw_sprite(p.x*GRID_W+GRID_W/2, p.y*GRID_H-2,
 						visual.sprite)
 			}
 		})
