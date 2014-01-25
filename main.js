@@ -97,8 +97,9 @@ function die(game, entity) {
 function SeedSpawner(game, interval_frames){
 	var that = this
 
-	this.timer = 0
-	this.life = 5*FPS //TODO: geenien laiffi + veden määrä
+	// kannattaa tehdä vähentämällä nollaan, koska voi varioida timeriä
+	this.timer = interval_frames
+	this.life = 15*FPS //TODO: geenien laiffi + veden määrä
 	this.placeable = false
 
 	this.should_blink = function(entity){
@@ -113,9 +114,9 @@ function SeedSpawner(game, interval_frames){
 		}
 		this.life--
 		
-		if(this.timer >= 0){
-			this.timer++
-			if(this.timer >= interval_frames){
+		if(this.timer > 0){
+			this.timer--
+			if(this.timer == 0){
 				//this.timer = 0 // Restart timer
 				this.timer = -1 // Disable timer
 				this.placeable = true
@@ -138,6 +139,9 @@ function SeedSpawner(game, interval_frames){
 					var e1 = create_seed_entity(game, x, y, 4*FPS)
 					game.entities.push(e1)
 					that.placeable = false
+					// saat laittaa uudelleen jos kasvi elää niin kauan
+					// (ilman vesimekaniikkaa ja geenejä, elää aina siihen asti)
+					that.timer = 6*FPS
 				}
 			}
 		}
@@ -285,6 +289,9 @@ function GameSection(game){
 			var mx = h1e.mousex()
 			var my = h1e.mousey()
 			some_text = "CLICKED AT ("+mx+", "+my+")"
+			
+			if (my<SCREEN_H/2) return true
+			
 			// First global callback
 			if(game.on_click_anything){
 				var cb = game.on_click_anything
