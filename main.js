@@ -148,7 +148,8 @@ function PlantComponent(game, interval_frames){
 			h1e.checkobject(entity.genes)
 			h1e.checkobject(entity.genes.current)
 			h1e.checkfinite(entity.genes.current.life)
-			this.life = entity.genes.current.life
+			var GENE_TO_FRAMES = 2 * FPS
+			this.life = entity.genes.current.life * GENE_TO_FRAMES
 		}
 		if (this.life !== undefined && this.life<=0) {
 			// miten entityn tappaminen toimii ja thisin ei?!?!?!?!?!
@@ -204,9 +205,9 @@ function PlantComponent(game, interval_frames){
 					// (ilman vesimekaniikkaa ja geenejä, elää aina siihen asti)
 					that.timer = 6*FPS
 					// Create stat visualization entity
-					var d_life = pad((new_genes.life - current_genes.life)/100, 0)
-					var d_growth = pad((new_genes.growth - current_genes.growth)*100, 0)
-					var d_absorb = pad((new_genes.absorb - current_genes.absorb)*100, 0)
+					var d_life = pad(new_genes.life - current_genes.life, 0)
+					var d_growth = pad(new_genes.growth - current_genes.growth, 0)
+					var d_absorb = pad(new_genes.absorb - current_genes.absorb, 0)
 					var statrows = [
 						{icon:"icon_life", text:(d_life>0?"+":"")+d_life},
 						{icon:"icon_growth", text:(d_growth>0?"+":"")+d_growth},
@@ -290,9 +291,9 @@ function Game(){
 	// Entities or whatever
 	this.entities = []
 	// Create initial entity
-	var life = 10*FPS + Math.random()*30*FPS
-	var growth = Math.random()*2
-	var absorb = Math.random()*2
+	var life = 10
+	var growth = 10
+	var absorb = 10
 	var genes = new Genes(life, growth, absorb)
 	this.entities.push(create_flower_entity(game, 15, 15, 1*FPS, genes))
 
@@ -408,7 +409,7 @@ function GameSection(game){
 					h1e.draw_rect(x0, y0, 32, 8*nrows, "rgba(0,0,0,0.5)")
 					visual.statrows.forEach(function(row, i){
 						h1e.draw_sprite(x0, y0 + i*8, row.icon)
-						draw_text(h1e, x0+12, y0 + i*8, row.text)
+						draw_text(h1e, x0+16, y0 + i*8, row.text)
 					})
 				}
 			}
@@ -438,17 +439,17 @@ function GameSection(game){
 				if(entity.genes !== undefined){
 					var genes = entity.genes.current
 					hover_info = ""
-					hover_info += "life  : "+pad(genes.life/FPS, 1)+"\n"
-					hover_info += "growth: "+pad(genes.growth, 3)+"\n"
-					hover_info += "absorb: "+pad(genes.absorb, 3)
+					hover_info += "life  : "+pad(genes.life, 0, 3)+"\n"
+					hover_info += "growth: "+pad(genes.growth, 0, 3)+"\n"
+					hover_info += "absorb: "+pad(genes.absorb, 0, 3)
 				}
 			}
 			if(hover_info){
-				/*var x = 200
-				var y = 30*/
+				//var x = 200
+				//var y = 30
 				var x = mx+16
 				var y = my-16
-				h1e.draw_rect(x, y, 80, 8*3, "rgba(0,0,0,0.5)")
+				h1e.draw_rect(x, y, 60, 8*3, "rgba(0,0,0,0.5)")
 				draw_text(h1e, x, y, hover_info)
 			}
 		}
