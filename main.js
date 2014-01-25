@@ -138,8 +138,8 @@ function SeedSpawner(game, interval_frames){
 			}
 		}
 		
-		if(this.placeable){
-			this.on_click = function(entity){
+		this.on_click = function(entity){
+			if(this.placeable){
 				game.message = "Click to place"
 				game.place_tooltip_sprite = "seed"
 				game.on_click_anything = function(mx, my){
