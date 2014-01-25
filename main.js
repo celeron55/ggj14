@@ -457,8 +457,6 @@ function GameSection(game){
 	var that = this
 	game = game ? game : new Game()
 
-	var some_text = "FOO"
-
 	this.draw = function(h1e){
 		var now = Date.now() // Time in ms (for blinking and whatever)
 
@@ -516,9 +514,8 @@ function GameSection(game){
 			var my = h1e.mousey()
 			h1e.draw_sprite(mx, my-12, game.place_tooltip_sprite)
 		}
-		draw_text(h1e, 0, 0, some_text)
 		if(game.message)
-			draw_text(h1e, 0, 10, game.message)
+			draw_text(h1e, 0, 0, game.message)
 
 		// Visualize what is selected
 		var mx = h1e.mousex()
@@ -555,9 +552,6 @@ function GameSection(game){
 		if(event.type == "mousedown"){
 			var mx = h1e.mousex()
 			var my = h1e.mousey()
-			some_text = "CLICKED AT ("+mx+", "+my+")"
-			
-			if (my<SCREEN_H/2) return true
 			
 			// First global callback
 			if(game.on_click_anything){
