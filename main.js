@@ -293,7 +293,8 @@ function GameSection(game){
 			if(entity.__blink && fl(now/100)%2==0)
 				show = false
 			if(show)
-				h1e.draw_sprite(p.x*GRID_W, p.y*GRID_H, visual.sprite)
+				h1e.draw_sprite(p.x*GRID_W+GRID_W/2, p.y*GRID_H,
+						visual.sprite)
 		})
 
 		// UI stuff
@@ -335,8 +336,10 @@ function GameSection(game){
 				var p = entity.position
 				if(p === undefined)
 					return
-				if(Math.abs(mx - p.x*GRID_W) <= GRID_W/2 &&
-						Math.abs(my - p.y*GRID_H) <= GRID_H/2){
+				//var r = GRID_W/2 // One grid tile
+				var r = GRID_W*0.7 // A bit larger area
+				if(Math.abs(mx - p.x*GRID_W) <= r &&
+						Math.abs(my - p.y*GRID_H) <= r){
 					for(var component_name in entity){
 						var c = entity[component_name]
 						if(c && c.on_click){
