@@ -205,13 +205,16 @@ function PlantComponent(game, interval_frames){
 					// (ilman vesimekaniikkaa ja geenejä, elää aina siihen asti)
 					that.timer = 6*FPS
 					// Create stat visualization entity
-					var d_life = pad(new_genes.life - current_genes.life, 0)
-					var d_growth = pad(new_genes.growth - current_genes.growth, 0)
-					var d_absorb = pad(new_genes.absorb - current_genes.absorb, 0)
+					var s_life = formatdiff(new_genes.life - current_genes.life, 0)
+					s_life += " = "+pad(new_genes.life, 0, 2)
+					var s_growth = formatdiff(new_genes.growth - current_genes.growth, 0)
+					s_growth += " = "+pad(new_genes.growth, 0, 2)
+					var s_absorb = formatdiff(new_genes.absorb - current_genes.absorb, 0)
+					s_absorb += " = "+pad(new_genes.absorb, 0, 2)
 					var statrows = [
-						{icon:"icon_life", text:(d_life>0?"+":"")+d_life},
-						{icon:"icon_growth", text:(d_growth>0?"+":"")+d_growth},
-						{icon:"icon_absorb", text:(d_absorb>0?"+":"")+d_absorb},
+						{icon:"icon_life", text:s_life},
+						{icon:"icon_growth", text:s_growth},
+						{icon:"icon_absorb", text:s_absorb},
 					]
 					game.entities.push(create_stat_entity(game, x, y, statrows))
 				}
@@ -356,6 +359,17 @@ function Game(){
 	}
 }
 
+function formatdiff(v, precision){
+	var dn = Math.pow(10, precision||0)
+	v = Math.round(v*dn)/dn
+	if(v == 0)
+		return " "+v
+	if(v < 0)
+		return "-"+Math.abs(v)
+	if(v > 0)
+		return "+"+v
+}
+
 function GameSection(game){
 	var that = this
 	game = game ? game : new Game()
@@ -406,7 +420,8 @@ function GameSection(game){
 					/*var x0 = p.x*GRID_W + 20
 					var y0 = p.y*GRID_H - visual.statrows.length*8 + 10*/
 					//console.log("x0="+x0+", y0="+y0)
-					h1e.draw_rect(x0, y0, 32, 8*nrows, "rgba(0,0,0,0.5)")
+					var rect_w = 54
+					h1e.draw_rect(x0, y0, rect_w, 8*nrows, "rgba(0,0,0,0.5)")
 					visual.statrows.forEach(function(row, i){
 						h1e.draw_sprite(x0, y0 + i*8, row.icon)
 						draw_text(h1e, x0+16, y0 + i*8, row.text)
