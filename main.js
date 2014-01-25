@@ -99,12 +99,6 @@ function Position(game, x, y){
 	this.y = y
 }
 
-function die(game, entity) {
-	// oletetaan, ettei ole tapettu jo
-	// varmaan voisi tehdä bufferin, ettei skipata seuraavaa elementtiä
-	game.entities.splice(game.entities.indexOf(entity), 1);
-}
-
 function SeedSpawner(game, interval_frames){
 	var that = this
 
@@ -125,7 +119,7 @@ function SeedSpawner(game, interval_frames){
 	this.on_update = function(entity){
 		if (this.life !== undefined && this.life==0) {
 			// miten entityn tappaminen toimii ja thisin ei?!?!?!?!?!
-			die(game, entity)
+			game.delete_entity(entity)
 			return
 		}
 		// okei, this ei ehkä viittaa siihen mihin luulen... 
@@ -260,6 +254,12 @@ function Game(){
 			}
 		})
 		return found_entity
+	}
+
+	this.delete_entity = function(entity){
+		// oletetaan, ettei ole tapettu jo
+		// varmaan voisi tehdä bufferin, ettei skipata seuraavaa elementtiä
+		this.entities.splice(this.entities.indexOf(entity), 1);
 	}
 }
 
