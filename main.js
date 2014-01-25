@@ -411,7 +411,7 @@ function Game(){
 				return
 			var r = GRID_W*0.7 // A bit larger area
 			if(Math.abs(mx - p.x*GRID_W - GRID_W/2) <= r &&
-					Math.abs(my - p.y*GRID_H) <= r){
+					Math.abs(my - p.y*GRID_H - 4) <= r){
 				found_entities.push(entity)
 			}
 		})
