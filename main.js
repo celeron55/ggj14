@@ -88,10 +88,17 @@ function Position(game, x, y){
 	this.y = y
 }
 
+function die(game, entity) {
+	// oletetaan, ettei ole tapettu jo
+	// varmaan voisi tehdä bufferin, ettei skipata seuraavaa elementtiä
+	game.entities.splice(game.entities.indexOf(entity), 1);
+}
+
 function SeedSpawner(game, interval_frames){
 	var that = this
 
 	this.timer = 0
+	this.life = 5*FPS //TODO: geenien laiffi + veden määrä
 	this.placeable = false
 
 	this.should_blink = function(entity){
@@ -99,6 +106,13 @@ function SeedSpawner(game, interval_frames){
 	}
 
 	this.on_update = function(entity){
+		if (this.life !== undefined && this.life==0) {
+			// miten entityn tappaminen toimii ja thisin ei?!?!?!?!?!
+			die(game, entity)
+			return
+		}
+		this.life--
+		
 		if(this.timer >= 0){
 			this.timer++
 			if(this.timer >= interval_frames){
@@ -107,6 +121,7 @@ function SeedSpawner(game, interval_frames){
 				this.placeable = true
 			}
 		}
+		
 		if(this.placeable){
 			this.on_click = function(entity){
 				game.message = "Click to place"
