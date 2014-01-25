@@ -18,7 +18,7 @@ h1e.add_image("guggenheim", "guggenheim.png")
 var m = "|mask=#000000"
 h1e.def_sprite("background", "background"+m, [[0,0,480,360]])
 h1e.def_sprite("thing", "guggenheim"+m, [[0,0,24,24],[24,0,24,24]], [12,12])
-h1e.def_sprite("thing2", "sprites"+m, [[0,0,24,24],[24,0,24,24]], [12,12])
+//h1e.def_sprite("thing2", "sprites"+m, [[0,0,24,24],[24,0,24,24]], [12,12])
 
 var font_frames = []
 for(var i=0; i<128; i++){
@@ -73,17 +73,44 @@ function roundify(v)
 	return Math.round(v/f)*f
 }
 
+function Visual(sprite){
+	this.sprite = sprite
+	this.blinking = false
+}
+
+function Position(x, y){
+	this.x = x
+	this.y = y
+}
+
+function SeedSpawner(interval_frames){
+	this.timer = 0
+
+	this.update = function(entity){
+		if(this.timer < 0)
+			return
+		this.timer++
+		if(this.timer >= interval_frames){
+			// TODO: Do something that makes seed placing interaction possible
+			entity.visual.blinking = true
+			this.timer = 0 // Restart timer
+			//this.timer = -1 // Disable timer
+		}
+	}
+}
+
 function Game(){
 	var that = this
 	var game = this
 
 	// Entities or whatever
 	var entities = []
-	entities.push({
-		type: "plantpart",
-		x: 240,
-		y: 230,
-	})
+	var e1 = {
+		visual: new Visual("thing"),
+		position: new Position(240, 230),
+		seed_spawner: new SeedSpawner(3*FPS),
+	}
+	entities.push(e1)
 
 	// Other resources
 	// TODO
@@ -91,17 +118,31 @@ function Game(){
 	// End condition variables and whatever
 
 	this.draw = function(){
+		var now = Date.now() // Time in ms
 		h1e.draw_sprite(0, 0, "background")
 		h1e.draw_rect(0, 240, 480, 320-240, "#335522")
 		entities.forEach(function(entity){
-			if(entity.type == "plantpart"){
-				h1e.draw_sprite(entity.x, entity.y, "thing")
-			}
+			if(entity.visual === undefined)
+				return
+			var visual = entity.visual
+			var position = entity.position
+			var show = true
+			if(visual.blinking && Math.floor(now/100)%2==0)
+				show = false
+			if(show)
+				h1e.draw_sprite(position.x, position.y, visual.sprite)
 		})
 	}
 
 	// Called every frame
 	this.update = function(){
+		entities.forEach(function(entity){
+			for(var component_name in entity){
+				var c = entity[component_name]
+				if(c && c.update)
+					c.update(entity)
+			}
+		})
 		// Return true if something changed (will be redrawn)
 		return true
 	}
