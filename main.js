@@ -401,13 +401,15 @@ function GlobalEffectStarterComponent(game){
 	var that = this
 
 	this.timer = SPEED_FACTOR*1
+	this.rain_interval = SPEED_FACTOR*15
 
 	this.on_update = function(entity){
 		if(this.timer >= 0){
 			this.timer--
 			return
 		}
-		this.timer = SPEED_FACTOR*30
+		this.timer = this.rain_interval
+		this.rain_interval += SPEED_FACTOR*2 // Rain gets rarer
 		var e = {
 			visual: new RainVisualComponent(game),
 			dietimer: new DieTimerComponent(game, 3*FPS),
