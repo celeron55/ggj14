@@ -369,6 +369,12 @@ function SeedComponent(game, interval_frames){
 	}
 }
 
+function ScrollComponent() {
+	this.on_update = function(entity){
+		entity.position.x -= 1/FPS
+	}
+}
+
 function CloudComponent(game, type) {
 	this.type = type
 	this.pleased = false
@@ -380,24 +386,26 @@ function CloudComponent(game, type) {
 			//	cause_disaster()
 			return
 		}
-		entity.position.x -= 1/FPS
 	}
 	
 	this.on_harvest = function(entity) {
-		if (this.pleased) return
+		// ei voi harvestoida jos ei ole vuorossa symbolijonossa
+		if (this.pleased /*|| game.cloudturn!==this*/) return
 		
 		if (entity.visual !== undefined && entity.visual.get_sprite() == this.type) {
 			this.pleased = true
-			// lisää checkmarkki tälle pilvelle
+			// lisää checkmarkki scrollcomponentilla tälle pilvelle
 		}
 	}
 }
 
-function create_cloud_entity(game, x, y, type){
+function create_cloud_entity(game, x, y){
+	type = ["flower","blueflower","whiteflower"][fl(Math.random()*3)]
 	return {
 		visual: new SpriteVisualComponent(game, "cloud"),
 		position: new PositionComponent(game, x, y),
-		cloud: new CloudComponent(game)
+		cloud: new CloudComponent(game, type),
+		scroll: new ScrollComponent()
 	}
 }
 
@@ -571,7 +579,7 @@ function Game(){
 	//var genes = new Genes(life, growth, 20)
 	//this.entities.push(create_flower_entity(game, 16, 15, 1*SPEED_FACTOR, genes))
 
-	this.entities.push(create_cloud_entity(game, TILES_W-3, 2, "blueflower"))
+	this.entities.push(create_cloud_entity(game, TILES_W-3, 2))
 	
 	// Global effect handler
 	this.entities.push({
