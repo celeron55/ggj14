@@ -522,6 +522,7 @@ function CloudComponent(game, type, host) {
 			cause_disaster(game)
 			$("#clang")[0].play()
 			this.host.spawn_clouds()
+			console.log(this.host.clouds.length)
 			return
 		}
 	}
