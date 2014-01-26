@@ -12,6 +12,7 @@ var GRID_H = 16
 var TILES_W = fl(SCREEN_W/GRID_W)
 var TILES_H = fl(SCREEN_H/GRID_H)
 var SPEED_FACTOR = FPS // Will be set by menu to below values
+var SUPERFAST_SPEED_FACTOR = FPS/3
 var FAST_SPEED_FACTOR = FPS
 var SLOW_SPEED_FACTOR = FPS*3
 
@@ -495,11 +496,19 @@ function cause_disaster(game) {
 	var y0 = 10
 	var x = fl(Math.random()*TILES_W)
 	var y = fl(Math.random()*(TILES_H-y0))+y0
-	game.tiles.set(x, y, new Tile("empty"))
-	game.tiles.set(x+1, y, new Tile("empty"))
-	game.tiles.set(x-1, y, new Tile("empty"))
-	game.tiles.set(x, y+1, new Tile("empty"))
-	game.tiles.set(x, y-1, new Tile("empty"))
+	var ps = [
+		{x:x, y:y},
+		{x:x-1, y:y},
+		{x:x+1, y:y},
+		{x:x, y:y-1},
+		{x:x, y:y+1},
+	]
+	ps.forEach(function(p){
+		game.tiles.set(p.x, p.y, new Tile("empty"))
+		var e = game.get_entity_at(p.x, p.y)
+		if(e)
+			game.delete_entity(e)
+	})
 }
 
 function CloudComponent(game, type, host) {
@@ -510,7 +519,6 @@ function CloudComponent(game, type, host) {
 	this.on_update = function(entity){
 		if (entity.position.x < 0) {
 			game.delete_entity(entity)
-			//if (!this.pleased)
 			cause_disaster(game)
 			$("#clang")[0].play()
 			this.host.spawn_clouds()
@@ -1065,6 +1073,11 @@ function StartSection(){
 			}
 			if(h1e.iskey(event.key, ["2"])){
 				SPEED_FACTOR = FAST_SPEED_FACTOR
+				h1e.push_section(new GameSection())
+				return true
+			}
+			if(h1e.iskey(event.key, ["3"])){
+				SPEED_FACTOR = SUPERFAST_SPEED_FACTOR
 				h1e.push_section(new GameSection())
 				return true
 			}
