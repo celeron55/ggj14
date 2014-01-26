@@ -501,11 +501,12 @@ function CloudComponent(game, type, host) {
 
 	this.on_update = function(entity){
 		if (entity.position.x < 0) {
-			//game.delete_entity(entity)
+			game.delete_entity(entity)
 			//if (!this.pleased)
 			cause_disaster()
 			$("#clang")[0].play()
 			this.host.spawn_clouds()
+			console.log(this.host.clouds.length)
 			return
 		}
 	}
