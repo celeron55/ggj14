@@ -855,7 +855,10 @@ function Game(){
 	this.delete_entity = function(entity){
 		// oletetaan, ettei ole tapettu jo
 		// varmaan voisi tehdä bufferin, ettei skipata seuraavaa elementtiä
-		this.entities.splice(this.entities.indexOf(entity), 1);
+		var i = this.entities.indexOf(entity)
+		if(i == -1)
+			return
+		this.entities.splice(i, 1);
 	}
 }
 
