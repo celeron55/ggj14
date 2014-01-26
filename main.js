@@ -51,7 +51,7 @@ names.forEach(function(name, i){
 
 var y0 = 24+32+16
 var names = ["icon_absorb", "icon_growth", "icon_life", "icon_seed",
-		"icon_plus1", "icon_minus1"]
+		"icon_plus1", "icon_minus1", "icon_check", "icon_spawn"]
 names.forEach(function(name, i){
 	h1e.def_sprite(name, "guggenheim"+m, [[8*i,y0,8,8]], [0,0])
 })
@@ -976,8 +976,9 @@ function GameSection(game){
 					var genes = entity.genes.current
 					var statrows = create_unchanged_gene_statrows(genes)
 					if(entity.plant){
-						var a = entity.plant.absorbed_amount
-						statrows.push({text: "absorbed: "+pad(a, 2)})
+						var a = ""+entity.plant.absorbed_amount
+						//statrows.push({text: "absorbed: "+pad(a, 2)})
+						statrows.push({icon:"icon_spawn", text:a})
 					}
 					var x = mx+16
 					var y = my+16
