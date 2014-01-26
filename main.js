@@ -489,7 +489,7 @@ function SeedComponent(game, interval_frames){
 
 function ScrollComponent() {
 	this.on_update = function(entity){
-		entity.position.x -= 1 / SPEED_FACTOR
+		entity.position.x -= 0.5 / SPEED_FACTOR
 	}
 }
 
