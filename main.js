@@ -327,7 +327,12 @@ function PlantComponent(game, interval_frames){
 	this.on_click = function(entity){
 		if(this.placeable){
 			game.message = "Place seed on ground or select plant to crossbreed"
-			game.place_tooltip_sprite = "seed"
+			var can_place_water = (entity.visual &&
+					entity.visual.get_sprite(entity) == "blueflower")
+			if(can_place_water)
+				game.place_tooltip_sprite = "icon_absorb"
+			else
+				game.place_tooltip_sprite = "seed"
 			var p = entity.position
 			var r = this.growth_r
 			var area_visual = {
@@ -368,6 +373,23 @@ function PlantComponent(game, interval_frames){
 					h1e.checkobject(entity.genes)
 					if(place_seed(game, x, y, entity.genes.current, that))
 						game.message = "Placed normal seed on ground"
+					return
+				}
+				if(can_place_water && e2.plant && e2.genes &&
+						e2.genes.current.absorb > e2.plant.absorbed_amount){
+					if(entity.plant.absorbed_amount < 1){
+						game.message = "Not enough water"
+						return
+					}
+					e2.plant.absorbed_amount += 1
+					entity.plant.absorbed_amount -= 1
+					game.message = "Gave water to plant"
+					var p2 = e2.position
+					var p1 = entity.position
+					add_game_entity(game, create_timed_sprite_entity(
+							game, p2.x-0.2, p2.y, "icon_plus1", 2*FPS))
+					add_game_entity(game, create_timed_sprite_entity(
+							game, p1.x-0.2, p1.y, "icon_minus1", 2*FPS))
 					return
 				}
 				if(!e2.plant){
@@ -597,7 +619,10 @@ function RainComponent(game){
 				return
 			plant.absorbed_amount = fl(genes.absorb)
 		})
-		for(var i=0; i<5; i++){
+		// Give N amount of water
+		/*for(var i=0; i<1; i++)*/
+		// Give one water for each plant
+		{
 			// Go through absorbing plants
 			game.entities.some(function(e1){
 				if(!e1.genes || !e1.plant || !e1.position)
@@ -620,6 +645,9 @@ function RainComponent(game){
 							!is_flat_genes(e2.genes.current))
 						return false // next (is water plant)
 					if(e2.plant.absorbed_amount >= e2.genes.absorb)
+						return false // next
+					// Give only if plant doesn't have any water
+					if(e2.plant.absorbed_amount >= 1)
 						return false // next
 					var p2 = e2.position
 					if(pos_distance(p1.x, p1.y, p2.x, p2.y) >=
