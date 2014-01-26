@@ -992,6 +992,14 @@ function GameSection(game){
 		}
 		if(game.message)
 			draw_text(h1e, 0, 0, game.message)
+		// Help text
+		var x0 = SCREEN_W - 180
+		var y0 = 0
+		h1e.draw_rect(x0, y0, 200, 32, "rgba(50,0,0,0.3)")
+		draw_text(h1e, x0, y0+ 0, "- Click to select a hilighted plant")
+		draw_text(h1e, x0, y0+ 8, "- Place seed on ground, or")
+		draw_text(h1e, x0, y0+16, "- Place on plant to crossbreed")
+		draw_text(h1e, x0, y0+24, "- Shift-click a plant to harvest it")
 
 		// Visualize what is selected
 		var mx = h1e.mousex()
