@@ -880,9 +880,11 @@ function GameSection(game){
 			}
 		}
 		if(event.type == "mousedown"){
+			if(!h1e.mouse.buttons["left"])
+				return false // Ignore
 			var mx = h1e.mousex()
 			var my = h1e.mousey()
-			
+
 			// First global callback
 			if(game.on_click_anything){
 				var cb = game.on_click_anything
@@ -896,9 +898,16 @@ function GameSection(game){
 			var done = hover_entities.some(function(entity){
 				for(var component_name in entity){
 					var c = entity[component_name]
-					if(c && c.on_click){
-						c.on_click(entity)
-						return true
+					if(h1e.keydown(["shift"])){
+						if(c && c.on_shift_click){
+							c.on_shift_click(entity)
+							return true
+						}
+					} else {
+						if(c && c.on_click){
+							c.on_click(entity)
+							return true
+						}
 					}
 				}
 			})
