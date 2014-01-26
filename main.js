@@ -397,6 +397,42 @@ function PlantComponent(game, interval_frames){
 			}
 		}
 	}
+	this.on_shift_click = function(entity){
+		var cloud_watch = undefined // Find this component of some entity
+		game.entities.some(function(e1){
+			if(e1.cloud_watch){
+				cloud_watch = e1.cloud_watch
+				return true
+			}
+		})
+		h1e.checkobject(cloud_watch)
+		h1e.checkobject(cloud_watch.clouds)
+		var clouds = cloud_watch.clouds
+		console.log("Attempting to harvest plant")
+		console.log("entity.visual.get_sprite(entity)="+
+				h1e.dump(entity.visual.get_sprite(entity)))
+		console.log("clouds[0].cloud.type="+h1e.dump(clouds[0].cloud.type))
+		// tarkista mätsääkö harvesti vasemmanpuoleisimpaan pilveen
+		if (entity.visual !== undefined &&
+				entity.visual.get_sprite(entity) == clouds[0].cloud.type) {
+			game.delete_entity(clouds[0])
+			game.delete_entity(entity)
+			//cloud_watch.clouds[0].cloud.please()
+			
+			var e = {
+				visual: new RainVisualComponent(game),
+				dietimer: new DieTimerComponent(game, 7*FPS),
+				rain: new RainComponent(game),
+			}
+			add_game_entity(game, e)
+			
+			cloud_watch.clouds.splice(0,1)
+		}
+		if (cloud_watch.clouds.length==0) {
+			// jos kaikki pilvet on mätsätty, arvo uudet
+			cloud_watch.spawn_clouds()
+		}
+	}
 }
 
 function SeedComponent(game, interval_frames){
@@ -430,7 +466,7 @@ function SeedComponent(game, interval_frames){
 
 function ScrollComponent() {
 	this.on_update = function(entity){
-		entity.position.x -= 1/FPS
+		entity.position.x -= 1 / SPEED_FACTOR
 	}
 }
 
@@ -451,30 +487,6 @@ function CloudWatch(game) {
 	}
 	
 	this.spawn_clouds()
-
-	this.on_shift_click = function(entity) {
-		// harvestoi valittu kasvi shift-klikkaamalla
-		if (entity===undefined) return
-		
-		// tarkista mätsääkö harvesti vasemmanpuoleisimpaan pilveen
-		if (entity.visual !== undefined && entity.visual.get_sprite() == this.clouds[0].cloud.type) {
-			game.delete_entity(this.clouds[0])
-			//this.clouds[0].cloud.please()
-			
-			var e = {
-				visual: new RainVisualComponent(game),
-				dietimer: new DieTimerComponent(game, 7*FPS),
-				rain: new RainComponent(game),
-			}
-			add_game_entity(game, e)
-			
-			this.clouds.splice(0,1)
-		}
-		if (this.clouds.length==0) {
-			// jos kaikki pilvet on mätsätty, arvo uudet
-			this.spawn_clouds()
-		}
-	}
 }
 
 function cause_disaster() {
@@ -514,9 +526,9 @@ function CloudComponent(game, type, host) {
 function create_cloud_entity(game, x, y, host){
 	type = ["flower","blueflower","whiteflower","noobbush"][fl(Math.random()*4)]
 	return {
-		//visual: new SpriteVisualComponent(game, "cloud"),
 		position: new PositionComponent(game, x, y),
 		scroll: new ScrollComponent(),
+		cloud: new CloudComponent(game, type, host),
 		visual: new CloudSpriteVisualComponent(game, type),
 	}
 }
@@ -614,13 +626,18 @@ function GlobalEffectStarterComponent(game){
 
 	this.timer = SPEED_FACTOR*1
 	this.rain_interval = SPEED_FACTOR*15
+	this.rained_once = false
 
 	this.on_update = function(entity){
 		if(this.timer >= 0){
 			this.timer--
 			return
 		}
-		this.timer = this.rain_interval
+		if(this.rained_once)
+			return
+		this.rained_once = true
+		// Commented out because rain starts only once automatically
+		//this.timer = this.rain_interval
 		this.rain_interval += SPEED_FACTOR*1.5 // Rain gets rarer
 		var e = {
 			visual: new RainVisualComponent(game),
@@ -703,13 +720,22 @@ function Game(){
 	var absorb = 10
 	var genes = new Genes(life, growth, absorb)
 	this.entities.push(create_flower_entity(game, 15, 15, 1*SPEED_FACTOR, genes))
+
 	// Test with water plant
-	//var genes = new Genes(life, growth, 20)
-	//this.entities.push(create_flower_entity(game, 16, 15, 1*SPEED_FACTOR, genes))
+	var genes = new Genes(life, growth, 20)
+	this.entities.push(create_flower_entity(game, 16, 15, 1*SPEED_FACTOR, genes))
+	// Test with life plant
+	var genes = new Genes(20, growth, absorb)
+	this.entities.push(create_flower_entity(game, 17, 15, 1*SPEED_FACTOR, genes))
+	// Test with growth plant
+	var genes = new Genes(life, 20, absorb)
+	this.entities.push(create_flower_entity(game, 18, 15, 1*SPEED_FACTOR, genes))
 
 	// Clouds
 	//this.entities.push(create_cloud_entity(game, TILES_W-3, 2))
-	this.entities.push(new CloudWatch(this))
+	this.entities.push({
+		cloud_watch: new CloudWatch(this)
+	})
 	
 	// Global effect handler
 	this.entities.push({
