@@ -1093,6 +1093,7 @@ function StartSection(){
 		var x0 = SCREEN_W/2
 		var y0 = SCREEN_H/2
 		h1e.draw_rect(x0-100, y0-50, 200, 100, "rgba(50,0,0,0.5)")
+		draw_text(h1e, x0+80, y0-50, "v1.0")
 		draw_text(h1e, x0-60, y0-35, "Venerable Life Complex")
 		draw_text(h1e, x0-70, y0-20, "BY JIGGAWATT AND CELERON55")
 		draw_text(h1e, x0-50, y0+10, "1: SLOW")
