@@ -21,10 +21,12 @@ h1e.add_image("sprites", "sprites.png")
 h1e.add_image("font", "font.png")
 h1e.add_image("guggenheim", "guggenheim2.png")
 h1e.add_image("special", "special.png")
+h1e.add_image("cloud", "cloud...OFDOOM.png")
 
 var m = "|mask=#808080"
 h1e.def_sprite("background", "background"+m, [[0,0,480,360]])
-h1e.def_sprite("shadow", "special", [[0,0,24,24], [12,12]])
+h1e.def_sprite("shadow", "special", [[0,0,24,24]])
+h1e.def_sprite("cloud", "cloud"+m, [[0,0,72,36]])
 
 var y0 = 0
 var names = ["flower","tree1","tree2","seed","halfgrown","vine","blueflower",
@@ -367,6 +369,25 @@ function SeedComponent(game, interval_frames){
 	}
 }
 
+function CloudComponent(game) {
+	this.on_update = function(entity){
+		if(entity.position.x < 0){
+			game.delete_entity(entity)
+			//cause_disaster()
+			return
+		}
+		entity.position.x-=1/FPS
+	}
+}
+
+function create_cloud_entity(game, x, y, type){
+	return {
+		visual: new SpriteVisualComponent(game, "cloud"),
+		position: new PositionComponent(game, x, y),
+		cloud: new CloudComponent(game)
+	}
+}
+
 function RainVisualComponent(game){
 	this.on_draw = function(entity){
 		h1e.draw_rect(0, 0, SCREEN_W, 160, "rgba(0,60,200,0.5)")
@@ -537,6 +558,8 @@ function Game(){
 	//var genes = new Genes(life, growth, 20)
 	//this.entities.push(create_flower_entity(game, 16, 15, 1*SPEED_FACTOR, genes))
 
+	this.entities.push(create_cloud_entity(game, TILES_W-3, 2, "blueflower"))
+	
 	// Global effect handler
 	this.entities.push({
 		global_effect_starter: new GlobalEffectStarterComponent(this)
@@ -843,5 +866,7 @@ $(document).ready(function(){
 	//$("#some_audio")[0].volume = 0.7
 	h1e.start()
 	$("#clang")[0].play()
+	$("#bgm")[0].loop = true
+	$('#bgm')[0].play()
 })
 
