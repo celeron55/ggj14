@@ -479,6 +479,7 @@ function CloudWatch(game) {
 		for (var cl in this.clouds) {
 			game.delete_entity(cl)
 		}
+		this.clouds = []
 		for (var i=0; i<this.spawnrate; i++) {
 			var cl = create_cloud_entity(game,TILES_W+i*3,3,this)
 			this.clouds.push(cl)
