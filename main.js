@@ -767,7 +767,7 @@ function Game(){
 	var genes = new Genes(life, growth, absorb)
 	this.entities.push(create_flower_entity(game, 15, 15, 1*SPEED_FACTOR, genes))
 
-	// Test with water plant
+	/*// Test with water plant
 	var genes = new Genes(life, growth, 20)
 	this.entities.push(create_flower_entity(game, 16, 15, 1*SPEED_FACTOR, genes))
 	// Test with life plant
@@ -775,7 +775,7 @@ function Game(){
 	this.entities.push(create_flower_entity(game, 17, 15, 1*SPEED_FACTOR, genes))
 	// Test with growth plant
 	var genes = new Genes(life, 20, absorb)
-	this.entities.push(create_flower_entity(game, 18, 15, 1*SPEED_FACTOR, genes))
+	this.entities.push(create_flower_entity(game, 18, 15, 1*SPEED_FACTOR, genes))*/
 
 	// Clouds
 	//this.entities.push(create_cloud_entity(game, TILES_W-3, 2))
@@ -1093,7 +1093,7 @@ function StartSection(){
 		var x0 = SCREEN_W/2
 		var y0 = SCREEN_H/2
 		h1e.draw_rect(x0-100, y0-50, 200, 100, "rgba(50,0,0,0.5)")
-		draw_text(h1e, x0+80, y0-50, "v1.0")
+		draw_text(h1e, x0+80, y0-50, "v1.1")
 		draw_text(h1e, x0-60, y0-35, "Venerable Life Complex")
 		draw_text(h1e, x0-70, y0-20, "BY JIGGAWATT AND CELERON55")
 		draw_text(h1e, x0-50, y0+10, "1: SLOW")
