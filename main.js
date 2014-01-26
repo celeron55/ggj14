@@ -489,8 +489,16 @@ function CloudWatch(game) {
 	this.spawn_clouds()
 }
 
-function cause_disaster() {
-
+function cause_disaster(game) {
+	game.screen_shake_timer = 1*FPS
+	var y0 = 10
+	var x = fl(Math.random()*TILES_W)
+	var y = fl(Math.random()*(TILES_H-y0))+y0
+	game.tiles.set(x, y, new Tile("empty"))
+	game.tiles.set(x+1, y, new Tile("empty"))
+	game.tiles.set(x-1, y, new Tile("empty"))
+	game.tiles.set(x, y+1, new Tile("empty"))
+	game.tiles.set(x, y-1, new Tile("empty"))
 }
 
 function CloudComponent(game, type, host) {
@@ -502,7 +510,7 @@ function CloudComponent(game, type, host) {
 		if (entity.position.x < 0) {
 			//game.delete_entity(entity)
 			//if (!this.pleased)
-			cause_disaster()
+			cause_disaster(game)
 			$("#clang")[0].play()
 			this.host.spawn_clouds()
 			return
@@ -747,9 +755,11 @@ function Game(){
 	generate_ground(this.tiles, Date.now())
 
 	// End condition variables and whatever
+	this.screen_shake_timer = 0 // 1*FPS
 
 	// Called every frame
 	this.update = function(){
+		this.screen_shake_timer--
 		this.entities.forEach(function(entity){
 			entity.__blink = undefined // Recalculate
 			entity.__hilight = undefined // Recalculate
@@ -852,10 +862,17 @@ function GameSection(game){
 	this.draw = function(h1e){
 		var now = Date.now() // Time in ms (for blinking and whatever)
 
+		var sx = 0
+		var sy = 0
+		if(game.screen_shake_timer > 0){
+			sx += (Math.random()-0.5)*10
+			sy += (Math.random()-0.5)*10
+		}
+
 		// Background
-		h1e.draw_sprite(0, 0, "background")
+		h1e.draw_sprite(0+sx, 0+sy, "background")
 		var green_y = 160
-		h1e.draw_rect(0, green_y, 480, 320-green_y, "#335522")
+		h1e.draw_rect(sx+0, sy+green_y, 480, 320-green_y, "#335522")
 
 		// Tiles
 		for(var y=0; y<TILES_H; y++)
@@ -865,7 +882,7 @@ function GameSection(game){
 			if(t.name == "empty")
 				continue
 			//var prop = tile_properties[t.name] // Unused here
-			h1e.draw_sprite(x*GRID_W, y*GRID_H, "tile_"+t.name)
+			h1e.draw_sprite(sx+x*GRID_W, sy+y*GRID_H, "tile_"+t.name)
 		}
 
 		// Entities
@@ -901,7 +918,7 @@ function GameSection(game){
 				if(sprite && p !== undefined){
 					if(!visual.disable_shadow)
 						h1e.draw_sprite(p.x*GRID_W, p.y*GRID_H, "shadow")
-					h1e.draw_sprite(p.x*GRID_W+GRID_W/2, p.y*GRID_H-2, sprite)
+					h1e.draw_sprite(p.x*GRID_W+GRID_W/2+sx, p.y*GRID_H-2+sy, sprite)
 				}
 			}
 			// Stat rows
