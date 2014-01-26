@@ -1,12 +1,12 @@
 var tile_properties = {
 	red: {
-		genes: new Genes(0.9, 1.2, 0.9),
+		genes: new Genes(0.9, 1.2, 0.85),
 	},
 	brown: {
 		genes: new Genes(0.95, 0.9, 1.2),
 	},
 	grey: {
-		genes: new Genes(1.2, 0.9, 0.9),
+		genes: new Genes(1.2, 0.9, 0.85),
 	},
 }
 
