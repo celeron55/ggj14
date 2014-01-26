@@ -52,7 +52,7 @@ names.forEach(function(name, i){
 
 var y0 = 24+32+16
 var names = ["icon_absorb", "icon_growth", "icon_life", "icon_seed",
-		"icon_plus1", "icon_minus1"]
+		"icon_plus1", "icon_minus1", "icon_check", "icon_spawn"]
 names.forEach(function(name, i){
 	h1e.def_sprite(name, "guggenheim"+m, [[8*i,y0,8,8]], [0,0])
 })
@@ -992,14 +992,6 @@ function GameSection(game){
 		}
 		if(game.message)
 			draw_text(h1e, 0, 0, game.message)
-		// Help text
-		var x0 = SCREEN_W - 180
-		var y0 = 0
-		h1e.draw_rect(x0, y0, 200, 32, "rgba(50,0,0,0.3)")
-		draw_text(h1e, x0, y0+ 0, "- Click to select a hilighted plant")
-		draw_text(h1e, x0, y0+ 8, "- Place seed on ground, or")
-		draw_text(h1e, x0, y0+16, "- Place on plant to crossbreed")
-		draw_text(h1e, x0, y0+24, "- Shift-click a plant to harvest it")
 
 		// Visualize what is selected
 		var mx = h1e.mousex()
@@ -1020,8 +1012,9 @@ function GameSection(game){
 					var genes = entity.genes.current
 					var statrows = create_unchanged_gene_statrows(genes)
 					if(entity.plant){
-						var a = entity.plant.absorbed_amount
-						statrows.push({text: "absorbed: "+pad(a, 2)})
+						var a = ""+entity.plant.absorbed_amount
+						//statrows.push({text: "absorbed: "+pad(a, 2)})
+						statrows.push({icon:"icon_spawn", text:a})
 					}
 					var x = mx+16
 					var y = my+16
