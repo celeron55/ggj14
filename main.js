@@ -514,19 +514,24 @@ function CloudComponent(game, type, host) {
 function create_cloud_entity(game, x, y, host){
 	type = ["flower","blueflower","whiteflower","noobbush"][fl(Math.random()*4)]
 	return {
-		visual: new SpriteVisualComponent(game, "cloud"),
+		//visual: new SpriteVisualComponent(game, "cloud"),
 		position: new PositionComponent(game, x, y),
-		cloud: new CloudComponent(game, type, host),
-		scroll: new ScrollComponent()
-		//sprite: new CloudSpriteVisualComponent(game, type)
+		scroll: new ScrollComponent(),
+		visual: new CloudSpriteVisualComponent(game, type),
 	}
 }
 
 function CloudSpriteVisualComponent(game, sprite){
 	this.sprite = sprite
-	this.disable_shadow = true
-	this.get_sprite = function(entity){
+	/*this.get_sprite = function(entity){
 		return this.sprite
+	}*/
+	this.on_draw = function(entity){
+		var p = entity.position
+		if(!p)
+			return
+		h1e.draw_sprite(p.x*GRID_W+GRID_W/2, p.y*GRID_H-2, "cloud")
+		h1e.draw_sprite(p.x*GRID_W+GRID_W/2+35, p.y*GRID_H-2+15, sprite)
 	}
 }
 
