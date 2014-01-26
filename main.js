@@ -434,6 +434,50 @@ function ScrollComponent() {
 	}
 }
 
+function CloudWatch(game) {
+	this.spawnrate = 1
+	
+	this.spawn_clouds = function() {
+		this.clouds = []
+		for (var i=0; i<this.spawnrate; i++) {
+			var cl = create_cloud_entity(game,TILES_W+i,3)
+			this.clouds.push(cl)
+			add_game_entity(game, cl)
+		}
+	}
+	
+	this.spawn_clouds()
+
+	this.on_shift_click = function(entity) {
+		// harvestoi valittu kasvi shift-klikkaamalla
+		if (entity===undefined) return
+		
+		// tarkista mätsääkö harvesti vasemmanpuoleisimpaan pilveen
+		if (entity.visual !== undefined && entity.visual.get_sprite() == this.clouds[0].cloud.type) {
+			game.delete_entity(this.clouds[0])
+			//this.clouds[0].cloud.please()
+			
+			var e = {
+				visual: new RainVisualComponent(game),
+				dietimer: new DieTimerComponent(game, 7*FPS),
+				rain: new RainComponent(game),
+			}
+			add_game_entity(game, e)
+			
+			this.clouds.splice(0,1)
+		}
+		if (this.clouds.length==0) {
+			// jos kaikki pilvet on mätsätty, arvo uudet
+			this.spawnrate++
+			this.spawn_clouds()
+		}
+	}
+}
+
+function cause_disaster() {
+
+}
+
 function CloudComponent(game, type) {
 	this.type = type
 	this.pleased = false
@@ -442,24 +486,27 @@ function CloudComponent(game, type) {
 		if (entity.position.x < 0) {
 			game.delete_entity(entity)
 			//if (!this.pleased)
-			//	cause_disaster()
+			cause_disaster()
 			return
 		}
 	}
 	
-	this.on_harvest = function(entity) {
+	this.please = function() {
+		this.pleased = true
+	}
+	/*this.on_harvest = function(entity) {
 		// ei voi harvestoida jos ei ole vuorossa symbolijonossa
-		if (this.pleased /*|| game.cloudturn!==this*/) return
+		if (this.pleased || game.cloudturn!==this) return
 		
 		if (entity.visual !== undefined && entity.visual.get_sprite() == this.type) {
 			this.pleased = true
 			// lisää checkmarkki scrollcomponentilla tälle pilvelle
 		}
-	}
+	}*/
 }
 
 function create_cloud_entity(game, x, y){
-	type = ["flower","blueflower","whiteflower"][fl(Math.random()*3)]
+	type = ["flower","blueflower","whiteflower","noobbush"][fl(Math.random()*4)]
 	return {
 		visual: new SpriteVisualComponent(game, "cloud"),
 		position: new PositionComponent(game, x, y),
@@ -640,7 +687,8 @@ function Game(){
 	//this.entities.push(create_flower_entity(game, 16, 15, 1*SPEED_FACTOR, genes))
 
 	// Clouds
-	this.entities.push(create_cloud_entity(game, TILES_W-3, 2))
+	//this.entities.push(create_cloud_entity(game, TILES_W-3, 2))
+	this.entities.push(new CloudWatch(this))
 	
 	// Global effect handler
 	this.entities.push({
