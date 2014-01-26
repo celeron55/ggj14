@@ -331,7 +331,7 @@ function SeedComponent(game, interval_frames){
 			if(this.timer == fl(interval_frames/2)){
 				entity.visual = new SpriteVisualComponent(game, "halfgrown")
 			}
-			if(this.timer == interval_frames-30) {
+			if(this.timer == interval_frames-40) {
 				$("#grow")[0].play()
 			}
 			if(this.timer >= interval_frames){
@@ -361,6 +361,8 @@ function RainComponent(game){
 	this.on_update = function(entity){
 		if(triggered)
 			return
+		
+		$("#rain")[0].play()
 		triggered = true // Do only once
 		game.entities.forEach(function(entity){
 			var plant = entity.plant
@@ -431,7 +433,7 @@ function GlobalEffectStarterComponent(game){
 		this.rain_interval += SPEED_FACTOR*1.5 // Rain gets rarer
 		var e = {
 			visual: new RainVisualComponent(game),
-			dietimer: new DieTimerComponent(game, 3*FPS),
+			dietimer: new DieTimerComponent(game, 7*FPS),
 			rain: new RainComponent(game),
 		}
 		game.entities.push(e)
@@ -772,8 +774,8 @@ $(document).ready(function(){
 	$(window).resize(function(){
 		pad_stuff()
 	})
-	$("#clang")[0].play()
 	//$("#some_audio")[0].volume = 0.7
 	h1e.start()
+	$("#clang")[0].play()
 })
 
