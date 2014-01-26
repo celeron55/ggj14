@@ -8,8 +8,12 @@ Juuh elikkäs todoa
   * balansointi ∞
 * vaikutusalue (johon kukin kasvi voi laitella siemeniä/vettä) CHECK
   * growth kasvattaa aluetta CHECK
-* vesi
-  * vain absorboijat keräävät
-    * luovuttavat muille pitääkseen ne hengissä spawnaukseen
+* vesi CHECK
+  * vain absorboijat keräävät CHECK
+    * luovuttavat muille pitääkseen ne hengissä spawnaukseen CHECK
       * rekursiivinen luovutus
+    * voisi myös antaa sinisten vain kastella (ja risteytyä), ei spawnata
 * risteytys?
+* pilvet
+  * vaativat uhrauksia, muuten katastrofi (sateen skippauskin on katastrofi)
+    * tietynlaisia kasveja mukaanlukien noobbushit, ehkä jopa tarkkoja geenien arvoja
