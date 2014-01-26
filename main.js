@@ -11,7 +11,7 @@ var GRID_W = 16
 var GRID_H = 16
 var TILES_W = fl(SCREEN_W/GRID_W)
 var TILES_H = fl(SCREEN_H/GRID_H)
-var SPEED_FACTOR = FPS*2
+var SPEED_FACTOR = FPS
 
 h1e.bgstyle = "#000000"
 h1e.init($("#main_canvas")[0], SCREEN_W, SCREEN_H, FPS)
@@ -268,7 +268,7 @@ function PlantComponent(game, interval_frames){
 				visual: new AreaVisualComponent(game, r),
 				position: new PositionComponent(game, p.x, p.y),
 			}
-			game.entities.push(area_visual)
+			add_game_entity(game, area_visual)
 
 			game.on_click_anything = function(mx, my){
 				game.delete_entity(area_visual)
@@ -303,7 +303,7 @@ function PlantComponent(game, interval_frames){
 				//console.log("new_genes: "+h1e.dump(new_genes))
 				new_genes.mutate(prop.genes)
 				var e1 = create_seed_entity(game, x, y, 4*SPEED_FACTOR, new_genes)
-				game.entities.push(e1)
+				add_game_entity(game, e1)
 				that.placeable = false
 				// saat laittaa uudelleen jos kasvi elää niin kauan
 				// (ilman vesimekaniikkaa ja geenejä, elää aina siihen asti)
@@ -313,7 +313,7 @@ function PlantComponent(game, interval_frames){
 				var statrows = create_gene_statrows(current_genes, new_genes)
 				var e = create_stat_entity(game, x, y, statrows)
 				e.statvisual_owned_by = e1
-				game.entities.push(e)
+				add_game_entity(game, e)
 				$("#seed")[0].play()
 			}
 		}
@@ -331,7 +331,7 @@ function SeedComponent(game, interval_frames){
 			if(this.timer == fl(interval_frames/2)){
 				entity.visual = new SpriteVisualComponent(game, "halfgrown")
 			}
-			if(this.timer == interval_frames-40) {
+			if(this.timer == interval_frames-20) {
 				$("#grow")[0].play()
 			}
 			if(this.timer >= interval_frames){
@@ -406,11 +406,11 @@ function RainComponent(game){
 						return false // next
 					e2.plant.absorbed_amount += 1
 					e1.plant.absorbed_amount -= 1
-					game.entities.push(create_timed_sprite_entity(
+					add_game_entity(game, create_timed_sprite_entity(
 							game, p2.x-0.2, p2.y, "icon_plus1", 2*FPS))
-					//game.entities.push(create_timed_sprite_entity(
+					//add_game_entity(game, create_timed_sprite_entity(
 					//		game, p1.x-0.2, p1.y, "icon_minus1", 2*FPS))
-					game.entities.push(create_timed_sprite_entity(
+					add_game_entity(game, create_timed_sprite_entity(
 							game, p1.x-0.2, p1.y, "icon_absorb", 2*FPS))
 				})
 			})
@@ -436,7 +436,7 @@ function GlobalEffectStarterComponent(game){
 			dietimer: new DieTimerComponent(game, 7*FPS),
 			rain: new RainComponent(game),
 		}
-		game.entities.push(e)
+		add_game_entity(game, e)
 	}
 	this.on_draw = function(entity){
 	}
@@ -767,6 +767,39 @@ h1e.push_section(new GameSection())
 
 function pad_stuff(){
 	h1e.resize_canvas($(window).width() - 5, $(window).height() - 5)
+}
+
+function match_depth(game, entity) {
+	// etsi sellainen other joka on entityn edessä
+	// jos ei löydy, -1 -> entity työnnetään eteen
+	for (var other in game.entities) {
+		if (other["position"]===undefined) {
+			continue
+		}
+		
+		if (other["position"].y >= entity["position"].y) {
+			return game.entities.indexOf(other)
+		}
+	}
+	return -1
+}
+
+function add_game_entity(game, entity) {
+	// pistä entiteetit toistensa taakse
+	// TODO: eipä toimi tietenkään
+	// (feilaa match_depthissa, other["position"] on aina undefined..?)
+	if (entity["position"]===undefined) {
+		game.entities.push(entity)
+		return
+	}
+	
+	var i = match_depth(game, entity)
+	if (i == -1) {
+		game.entities.push(entity)
+		return
+	}
+	
+	game.entities.splice(i,0,entity)
 }
 
 $(document).ready(function(){
