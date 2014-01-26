@@ -224,6 +224,49 @@ function GenesComponent(game, current_genes){
 	}
 }
 
+function place_seed(game, x, y, current_genes, plantc, crossgenes){
+	var e2 = game.get_entity_at(x, y)
+	if(e2){
+		game.message = "Entity in the way"
+		return false
+	}
+	var tile = game.tiles.get(x, y)
+	if(tile === undefined){
+		game.message = "Cannot place here"
+		return false
+	}
+	h1e.checkobject(tile_properties)
+	var prop = tile_properties[tile.name]
+	if(prop === undefined){
+		game.message = "Cannot place here"
+		return false
+	}
+	//console.log("current_genes: "+h1e.dump(current_genes))
+	var new_genes = current_genes.clone()
+	console.log("Origin genes: "+h1e.dump(new_genes.get_array()))
+	//console.log("new_genes: "+h1e.dump(new_genes))
+	if(crossgenes){
+		console.log("Crossing with:"+h1e.dump(crossgenes.get_array()))
+		new_genes.cross(crossgenes)
+	}
+	new_genes.mutate(prop.genes)
+	console.log("Result genes: "+h1e.dump(new_genes.get_array()))
+	var e1 = create_seed_entity(game, x, y, 4*SPEED_FACTOR, new_genes)
+	add_game_entity(game, e1)
+	plantc.placeable = false
+	// saat laittaa uudelleen jos kasvi elää niin kauan
+	// (ilman vesimekaniikkaa ja geenejä, elää aina siihen asti)
+	plantc.timer = 6*SPEED_FACTOR
+	plantc.absorbed_amount -= 1
+	// Create stat visualization entity
+	var statrows = create_gene_statrows(current_genes, new_genes)
+	var e = create_stat_entity(game, x, y, statrows)
+	e.statvisual_owned_by = e1
+	add_game_entity(game, e)
+	$("#seed")[0].play()
+	return true
+}
+
 function PlantComponent(game, interval_frames){
 	var that = this
 
@@ -280,7 +323,7 @@ function PlantComponent(game, interval_frames){
 	}
 	this.on_click = function(entity){
 		if(this.placeable){
-			game.message = "Click to place"
+			game.message = "Place seed on ground or select plant to crossbreed"
 			game.place_tooltip_sprite = "seed"
 			var p = entity.position
 			var r = this.growth_r
@@ -289,6 +332,17 @@ function PlantComponent(game, interval_frames){
 				position: new PositionComponent(game, p.x, p.y),
 			}
 			add_game_entity(game, area_visual)
+			/*for(var y=0; y<TILES_H; y++)
+			for(var x=0; x<TILES_W; x++)
+			{
+				var d = pos_distance(x, y, p.x, p.y)
+				if(d > r)
+					continue
+				var e2 = game.get_entity_at(x, y)
+				if(e2.plant){
+					// Show something special?
+				}
+			}*/
 
 			game.on_click_anything = function(mx, my){
 				game.delete_entity(area_visual)
@@ -301,40 +355,43 @@ function PlantComponent(game, interval_frames){
 					game.message = "Out of range of this plant"
 					return
 				}
-				if(game.get_entity_at(x, y)){
+				var e2 = game.get_entity_at(x, y)
+				if(e2 == entity){
+					game.message = "Cannot place on same entity"
+					return
+				}
+				if(!e2){
+					// Place seed normally
+					h1e.checkobject(entity.genes)
+					if(place_seed(game, x, y, entity.genes.current, that))
+						game.message = "Placed normal seed on ground"
+					return
+				}
+				if(!e2.plant){
 					game.message = "Cannot place on existing entity"
 					return
 				}
-				h1e.checkobject(entity.genes)
-				var tile = game.tiles.get(x, y)
-				if(tile === undefined){
-					game.message = "Cannot place here"
-					return
+				game.message = "Place cross-bred seed on ground"
+				// Do the same thing as before
+				game.place_tooltip_sprite = "seed"
+				var area_visual2 = {
+					visual: new AreaVisualComponent(game, r),
+					position: new PositionComponent(game, p.x, p.y),
 				}
-				h1e.checkobject(tile_properties)
-				var prop = tile_properties[tile.name]
-				if(prop === undefined){
-					game.message = "Cannot place here"
-					return
+				add_game_entity(game, area_visual2)
+				game.on_click_anything = function(mx, my){
+					game.delete_entity(area_visual2)
+					var x = rn((mx-GRID_W/2)/GRID_W)
+					var y = rn((my-GRID_H/2)/GRID_H)
+					game.message = undefined
+					game.place_tooltip_sprite = undefined
+					h1e.checkobject(entity.genes)
+					h1e.checkobject(e2.genes)
+					var current_genes = entity.genes.current
+					var cross_genes = e2.genes.current
+					if(place_seed(game, x, y, current_genes, that, cross_genes))
+						game.message = "Placed cross-bred seed on ground"
 				}
-				var current_genes = entity.genes.current
-				//console.log("current_genes: "+h1e.dump(current_genes))
-				var new_genes = current_genes.clone()
-				//console.log("new_genes: "+h1e.dump(new_genes))
-				new_genes.mutate(prop.genes)
-				var e1 = create_seed_entity(game, x, y, 4*SPEED_FACTOR, new_genes)
-				add_game_entity(game, e1)
-				that.placeable = false
-				// saat laittaa uudelleen jos kasvi elää niin kauan
-				// (ilman vesimekaniikkaa ja geenejä, elää aina siihen asti)
-				that.timer = 6*SPEED_FACTOR
-				that.absorbed_amount -= 1
-				// Create stat visualization entity
-				var statrows = create_gene_statrows(current_genes, new_genes)
-				var e = create_stat_entity(game, x, y, statrows)
-				e.statvisual_owned_by = e1
-				add_game_entity(game, e)
-				$("#seed")[0].play()
 			}
 		}
 	}
@@ -568,9 +625,10 @@ function Game(){
 	var genes = new Genes(life, growth, absorb)
 	this.entities.push(create_flower_entity(game, 15, 15, 1*SPEED_FACTOR, genes))
 	// Test with water plant
-	//var genes = new Genes(life, growth, 20)
-	//this.entities.push(create_flower_entity(game, 16, 15, 1*SPEED_FACTOR, genes))
+	var genes = new Genes(life, growth, 20)
+	this.entities.push(create_flower_entity(game, 16, 15, 1*SPEED_FACTOR, genes))
 
+	// Clouds
 	this.entities.push(create_cloud_entity(game, TILES_W-3, 2, "blueflower"))
 	
 	// Global effect handler
@@ -721,33 +779,46 @@ function GameSection(game){
 				show = false
 			if(!show)
 				return
-			var hilight = entity.__hilight
-			if(hilight){
-				h1e.draw_rect(p.x*GRID_W, p.y*GRID_H, 16, 16,
-						"rgba(255,255,255,0.5)")
+			// Hilight
+			if(entity.__hilight){
+				var hilight = entity.__hilight
+				if(hilight){
+					h1e.draw_rect(p.x*GRID_W, p.y*GRID_H, 16, 16,
+							"rgba(255,255,255,0.5)")
+				}
 			}
-			var sprite = visual.sprite
-			if(visual.get_sprite)
-				sprite = visual.get_sprite(entity)
-			if(sprite && p !== undefined){
-				if(!visual.disable_shadow)
-					h1e.draw_sprite(p.x*GRID_W, p.y*GRID_H, "shadow")
-				h1e.draw_sprite(p.x*GRID_W+GRID_W/2, p.y*GRID_H-2, sprite)
+			// Sprite
+			if(visual.sprite || visual.get_sprite){
+				var sprite = visual.sprite
+				if(visual.get_sprite)
+					sprite = visual.get_sprite(entity)
+				if(sprite && p !== undefined){
+					if(!visual.disable_shadow)
+						h1e.draw_sprite(p.x*GRID_W, p.y*GRID_H, "shadow")
+					h1e.draw_sprite(p.x*GRID_W+GRID_W/2, p.y*GRID_H-2, sprite)
+				}
 			}
+			// Stat rows
 			if(visual.statrows && p !== undefined){
 				var x0 = p.x*GRID_W
 				var y0 = p.y*GRID_H
 				draw_statrows(x0, y0, visual.statrows)
 			}
+			// Tile area
 			if(visual.tile_area_r !== undefined && p !== undefined){
-				for(var y=0; y<TILES_H; y++)
-				for(var x=0; x<TILES_W; x++)
-				{
-					var d = pos_distance(x, y, p.x, p.y)
-					if(d > visual.tile_area_r)
-						continue
-					h1e.draw_rect(x*GRID_W, y*GRID_H, 16, 16,
+				if(visual.tile_area_r < 1.0){
+					h1e.draw_rect(p.x*GRID_W, p.y*GRID_H, 16, 16,
 							"rgba(70,200,50,0.3)")
+				} else {
+					for(var y=0; y<TILES_H; y++)
+					for(var x=0; x<TILES_W; x++)
+					{
+						var d = pos_distance(x, y, p.x, p.y)
+						if(d > visual.tile_area_r)
+							continue
+						h1e.draw_rect(x*GRID_W, y*GRID_H, 16, 16,
+								"rgba(70,200,50,0.3)")
+					}
 				}
 			}
 		})
