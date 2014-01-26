@@ -435,12 +435,16 @@ function ScrollComponent() {
 }
 
 function CloudWatch(game) {
-	this.spawnrate = 1
+	this.clouds = []
+	this.spawnrate = 0
 	
 	this.spawn_clouds = function() {
-		this.clouds = []
+		this.spawnrate++
+		for (var cl in this.clouds) {
+			game.delete_entity(cl)
+		}
 		for (var i=0; i<this.spawnrate; i++) {
-			var cl = create_cloud_entity(game,TILES_W+i,3)
+			var cl = create_cloud_entity(game,TILES_W+i*3,3,this)
 			this.clouds.push(cl)
 			add_game_entity(game, cl)
 		}
@@ -468,7 +472,6 @@ function CloudWatch(game) {
 		}
 		if (this.clouds.length==0) {
 			// jos kaikki pilvet on mätsätty, arvo uudet
-			this.spawnrate++
 			this.spawn_clouds()
 		}
 	}
@@ -478,15 +481,18 @@ function cause_disaster() {
 
 }
 
-function CloudComponent(game, type) {
+function CloudComponent(game, type, host) {
 	this.type = type
 	this.pleased = false
+	this.host = host
 
 	this.on_update = function(entity){
 		if (entity.position.x < 0) {
-			game.delete_entity(entity)
+			//game.delete_entity(entity)
 			//if (!this.pleased)
 			cause_disaster()
+			$("#clang")[0].play()
+			this.host.spawn_clouds()
 			return
 		}
 	}
@@ -505,15 +511,25 @@ function CloudComponent(game, type) {
 	}*/
 }
 
-function create_cloud_entity(game, x, y){
+function create_cloud_entity(game, x, y, host){
 	type = ["flower","blueflower","whiteflower","noobbush"][fl(Math.random()*4)]
 	return {
 		visual: new SpriteVisualComponent(game, "cloud"),
 		position: new PositionComponent(game, x, y),
-		cloud: new CloudComponent(game, type),
+		cloud: new CloudComponent(game, type, host),
 		scroll: new ScrollComponent()
+		//sprite: new CloudSpriteVisualComponent(game, type)
 	}
 }
+
+function CloudSpriteVisualComponent(game, sprite){
+	this.sprite = sprite
+	this.disable_shadow = true
+	this.get_sprite = function(entity){
+		return this.sprite
+	}
+}
+
 
 function RainVisualComponent(game){
 	this.on_draw = function(entity){
@@ -1057,7 +1073,6 @@ $(document).ready(function(){
 	})
 	//$("#some_audio")[0].volume = 0.7
 	h1e.start()
-	$("#clang")[0].play()
 	$("#bgm")[0].loop = true
 	$('#bgm')[0].play()
 })
