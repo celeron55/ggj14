@@ -369,14 +369,27 @@ function SeedComponent(game, interval_frames){
 	}
 }
 
-function CloudComponent(game) {
+function CloudComponent(game, type) {
+	this.type = type
+	this.pleased = false
+
 	this.on_update = function(entity){
-		if(entity.position.x < 0){
+		if (entity.position.x < 0) {
 			game.delete_entity(entity)
-			//cause_disaster()
+			//if (!this.pleased)
+			//	cause_disaster()
 			return
 		}
-		entity.position.x-=1/FPS
+		entity.position.x -= 1/FPS
+	}
+	
+	this.on_harvest = function(entity) {
+		if (this.pleased) return
+		
+		if (entity.visual !== undefined && entity.visual.get_sprite() == this.type) {
+			this.pleased = true
+			// lisää checkmarkki tälle pilvelle
+		}
 	}
 }
 
