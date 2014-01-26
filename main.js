@@ -412,7 +412,7 @@ function RainComponent(game){
 
 	this.on_update = function(entity){
 		if(triggered){
-			for(var i=0; i<20; i++){
+			for(var i=0; i<5; i++){
 				game.entities.push(create_droplet(game))
 			}
 			return
@@ -540,7 +540,7 @@ function create_timed_sprite_entity(game, x, y, sprite, frames){
 }
 
 function create_droplet(game){
-	var x = Math.random()*SCREEN_W
+	var x = Math.random()*SCREEN_W/GRID_W*1.3
 	var y = 0
 	var img = ["raindrop1","raindrop2","raindrop3"][fl(Math.random()*3)]
 	return {
