@@ -16,3 +16,4 @@ Juuh elikkäs todoa
 * risteytys?
 * pilvet
   * vaativat uhrauksia, muuten katastrofi (sateen skippauskin on katastrofi)
+    * tietynlaisia kasveja mukaanlukien noobbushit, ehkä jopa tarkkoja geenien arvoja
