@@ -11,7 +11,9 @@ var GRID_W = 16
 var GRID_H = 16
 var TILES_W = fl(SCREEN_W/GRID_W)
 var TILES_H = fl(SCREEN_H/GRID_H)
-var SPEED_FACTOR = FPS
+var SPEED_FACTOR = FPS // Will be set by menu to below values
+var FAST_SPEED_FACTOR = FPS
+var SLOW_SPEED_FACTOR = FPS*3
 
 h1e.bgstyle = "#000000"
 h1e.init($("#main_canvas")[0], SCREEN_W, SCREEN_H, FPS)
@@ -618,6 +620,7 @@ function create_droplet(game){
 function Game(){
 	var that = this
 	var game = this
+	console.log("Game created; speed factor is "+SPEED_FACTOR)
 
 	// Game-wide publicly settable callbacks and stuff
 	this.on_click_anything = undefined // Cleared before calling
@@ -911,7 +914,47 @@ function GameSection(game){
 	}
 }
 
-h1e.push_section(new GameSection())
+function StartSection(){
+
+	this.draw = function(h1e){
+		// Background
+		h1e.draw_sprite(0, 0, "background")
+		//var green_y = 160
+		//h1e.draw_rect(0, green_y, 480, 320-green_y, "#335522")
+
+		// Stuff
+		var x0 = SCREEN_W/2
+		var y0 = SCREEN_H/2
+		h1e.draw_rect(x0-100, y0-50, 200, 100, "rgba(50,0,0,0.5)")
+		draw_text(h1e, x0-60, y0-35, "Venerable Life Complex")
+		draw_text(h1e, x0-70, y0-20, "BY JIGGAWATT AND CELERON55")
+		draw_text(h1e, x0-50, y0+10, "1: SLOW")
+		draw_text(h1e, x0+5, y0+10, "2: FAST")
+		draw_text(h1e, x0-70, y0+25, "Press number to start game.")
+	}
+	this.event = function(h1e, event){
+		if(event.type == "keydown"){
+			if(h1e.iskey(event.key, ["1"])){
+				SPEED_FACTOR = SLOW_SPEED_FACTOR
+				h1e.push_section(new GameSection())
+				return true
+			}
+			if(h1e.iskey(event.key, ["2"])){
+				SPEED_FACTOR = FAST_SPEED_FACTOR
+				h1e.push_section(new GameSection())
+				return true
+			}
+		}
+	}
+	this.update = function(h1e){
+		// Return true if something changed (will be redrawn)
+		return false
+		//return game.update()
+	}
+}
+
+//h1e.push_section(new GameSection())
+h1e.push_section(new StartSection())
 
 function pad_stuff(){
 	h1e.resize_canvas($(window).width() - 5, $(window).height() - 5)
