@@ -28,10 +28,16 @@ h1e.def_sprite("shadow", "special", [[0,0,24,24], [12,12]])
 
 var y0 = 0
 var names = ["flower","tree1","tree2","seed","halfgrown","vine","blueflower",
-		"whiteflower","noobbush"]
+		"whiteflower","noobbush","blueflower_s","whiteflower_s","noobbush_s","flower_s","raindrop1","raindrop2","raindrop3"]
 names.forEach(function(name, i){
 	h1e.def_sprite(name, "guggenheim"+m, [[24*i,y0,24,24]], [12,12])
 })
+
+/*var y0 = 24
+var names = ["branch_l", "branch_r"]
+names.forEach(function(name, i){
+	h1e.def_sprite(name, "guggenheim"+m, [[32*i,y0,32,32]], [0,0])
+})*/
 
 var y0 = 24+32
 var names = ["tile_brown", "tile_red", "tile_grey"]
@@ -502,8 +508,9 @@ function create_timed_sprite_entity(game, x, y, sprite, frames){
 function create_droplet(game){
 	var x = Math.random()*SCREEN_W
 	var y = 0
+	var img = ["raindrop1","raindrop2","raindrop3"][fl(Math.random()*3)]
 	return {
-		visual: new SpriteVisualComponent(game, "icon_absorb"),
+		visual: new SpriteVisualComponent(game, img),
 		position: new PositionComponent(game, x, y),
 		droplet: new DropletComponent(game),
 	}
