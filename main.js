@@ -194,6 +194,18 @@ function PositionComponent(game, x, y){
 	this.y = y
 }
 
+function DropletComponent(game){
+	this.on_update = function(entity){
+		var p = entity.position
+		if(p.y > 160/GRID_H){
+			game.delete_entity(entity)
+			return
+		}
+		p.x -= 0.2
+		p.y += 0.4
+	}
+}
+
 function GenesComponent(game, current_genes){
 	h1e.checkobject(current_genes)
 	this.current = current_genes
@@ -359,8 +371,12 @@ function RainComponent(game){
 	var triggered = false
 
 	this.on_update = function(entity){
-		if(triggered)
+		if(triggered){
+			for(var i=0; i<20; i++){
+				game.entities.push(create_droplet(game))
+			}
 			return
+		}
 		
 		$("#rain")[0].play()
 		triggered = true // Do only once
@@ -480,6 +496,16 @@ function create_timed_sprite_entity(game, x, y, sprite, frames){
 		visual: new SpriteVisualComponent(game, sprite, false),
 		position: new PositionComponent(game, x, y),
 		dietimer: new DieTimerComponent(game, frames),
+	}
+}
+
+function create_droplet(game){
+	var x = Math.random()*SCREEN_W
+	var y = 0
+	return {
+		visual: new SpriteVisualComponent(game, "icon_absorb"),
+		position: new PositionComponent(game, x, y),
+		droplet: new DropletComponent(game),
 	}
 }
 
